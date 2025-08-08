@@ -1,60 +1,46 @@
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { options } from '@/app/api/auth/[...nextauth]/options';
+import ManagerDashboard from "../../components/ManagerDashboard";
+const BASE_URL = "https://a2sv-application-platform-backend-team5.onrender.com";
 
-export default async function ManagerPage() {
-  const session = await getServerSession(options);
+export default async function Page() {
+  const accessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMWE3YWYzZC1mOWMzLTQzYWQtYWFkYy01N2EzNGFkZmU3NzciLCJleHAiOjE3NTQ1OTg2NjcsInR5cGUiOiJhY2Nlc3MifQ.8xjntUhXds2dFkn7fdQhkRna9_LjPxcHirFkAwv7JPQ";
+  const res = await fetch(BASE_URL + "/manager/applications/", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-  // Redirect unauthenticated users
-  if (!session) {
-    redirect('/Signin');
-  }
-
-  // Define role-specific redirect URLs
-  const roleRedirects: { [key: string]: string } = {
-    admin: '/admin',
-    manager: '/manager',
-    reviewer: '/reviewer',
-    applicant: '/applicant',
-  };
-
-  // Get the user's role, default to 'applicant'
-  const role = session.user?.role || 'applicant';
-  const redirectUrl = roleRedirects[role] || '/applicant';
-
-  // Redirect unauthorized users
-  if (role !== 'manager') {
-    redirect(redirectUrl);
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div className="flex justify-center">
-          <Link href="/applicant">
-            <Image src="/assets/Logo.png" alt="Logo" className="h-12 w-auto" width={120} height={48} priority />
-          </Link>
-        </div>
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">Manager Dashboard</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome, {session.user.full_name || 'Manager'}! Manage teams and reviews here.
-          </p>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            [Placeholder: Your team can implement manager features here.]
-          </p>
-        </div>
-        <div className="text-center">
-          <Link
-            href="/Signin"
-            className="inline-block py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Sign Out
-          </Link>
-        </div>
+  if (res.status === 401) {
+    // Token expired or unauthorized
+    return (
+      <div className="p-8">
+        <h1 className="text-xl font-bold text-red-600">Unauthorized</h1>
+        <p>
+          Your session has expired. Please{" "}
+          <a href="/login" className="underline text-blue-600">
+            log in again
+          </a>
+          .
+        </p>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!res.ok) {
+    // Handle other errors
+    return (
+      <div className="p-8">
+        <h1 className="text-xl font-bold text-red-600">
+          Error loading applications
+        </h1>
+        <p>Status: {res.status}</p>
+      </div>
+    );
+  }
+
+  const response = await res.json();
+
+  const applications = response.data?.applications ?? [];
+
+  return <ManagerDashboard applications={applications} />;
 }
