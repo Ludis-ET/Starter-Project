@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import ManagerActions from "@/components/ManagerActionsClient"; 
+import ManagerActions from "@/components/ManagerActionsClient";
 const BASE_URL = "https://a2sv-application-platform-backend-team5.onrender.com";
 
 interface Props {
@@ -13,7 +13,7 @@ const Page = async ({ params }: Props) => {
   const slug = params.slug;
 
   const accessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMWE3YWYzZC1mOWMzLTQzYWQtYWFkYy01N2EzNGFkZmU3NzciLCJleHAiOjE3NTQ1NzI5ODcsInR5cGUiOiJhY2Nlc3MifQ.vSOOGjdTmXLsVi2VO7oSUXsg6hfa_Kpo_qyOH9NNXM8";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMWE3YWYzZC1mOWMzLTQzYWQtYWFkYy01N2EzNGFkZmU3NzciLCJleHAiOjE3NTQ1OTg2NjcsInR5cGUiOiJhY2Nlc3MifQ.8xjntUhXds2dFkn7fdQhkRna9_LjPxcHirFkAwv7JPQ";
 
   const res = await fetch(`${BASE_URL}/manager/applications/${slug}`, {
     headers: {

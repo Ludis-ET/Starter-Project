@@ -26,14 +26,37 @@ interface Action {
 interface CustomDropdownProps {
   reviewers: Reviewer[];
   app: Application;
+  refetchApplications: () => void; // New prop to refetch applications
 }
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app }) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetchApplications }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const assignRef = useRef<HTMLDivElement>(null);
+
+  const handleAssignReviewer = async (reviewerId: string, reviewerName: string) => {
+    try {
+      const response = await fetch(`/api/applications/${app.id}/assign`, {
+        method: 'POST', // or 'PATCH' depending on your API
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reviewerId }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to assign reviewer');
+      }
+      console.log(`Assigned ${app.applicant_name} to ${reviewerName}`);
+      setIsAssignOpen(false);
+      setIsOpen(false);
+      refetchApplications(); // Trigger refetch to update UI
+    } catch (error) {
+      console.error('Error assigning reviewer:', error);
+      // Optionally show an error message to the user
+    }
+  };
 
   const actions: Action[] = [
     { name: 'Review', onClick: () => console.log(`Review clicked for ${app.applicant_name}`) },
@@ -104,11 +127,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app }) => {
             {filteredReviewers.map((reviewer) => (
               <div
                 key={reviewer.id}
-                onClick={() => {
-                  console.log(`Assigned ${app.applicant_name} to ${reviewer.name}`);
-                  setIsAssignOpen(false);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleAssignReviewer(reviewer.id, reviewer.name)}
                 className="flex items-center px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
               >
                 <span className="w-4 h-4 bg-gray-400 rounded-full mr-2"></span>

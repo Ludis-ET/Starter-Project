@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomDropdown from "./CustomDropdown";
 
@@ -19,20 +19,80 @@ interface Application {
   status: string;
 }
 
-const reviewers: Reviewer[] = [
-  { id: "1", name: "Michael Smith", stats: "3 Assigned / Avg. 2.5 days", reviews: 12 },
-  { id: "2", name: "Sarah Lee", stats: "4 Assigned / Avg. 1.8 days", reviews: 15 },
-  { id: "3", name: "John Doe", stats: "2 Assigned / Avg. 3.1 days", reviews: 8 },
+// Dummy stats to merge with fetched reviewers
+const dummyStats = [
+  { stats: "3 Assigned / Avg. 2.5 days", reviews: 12 },
+  { stats: "4 Assigned / Avg. 1.8 days", reviews: 15 },
+  { stats: "2 Assigned / Avg. 3.1 days", reviews: 8 },
 ];
 
-const ManagerDashboard: React.FC<{ applications: Application[] }> = ({ applications }) => {
+const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
+  applications,
+}) => {
   const [filterStatus, setFilterStatus] = useState("All");
+  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const accessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMWE3YWYzZC1mOWMzLTQzYWQtYWFkYy01N2EzNGFkZmU3NzciLCJleHAiOjE3NTQ1OTg2NjcsInR5cGUiOiJhY2Nlc3MifQ.8xjntUhXds2dFkn7fdQhkRna9_LjPxcHirFkAwv7JPQ";
+
+  useEffect(() => {
+    const fetchReviewers = async () => {
+      try {
+        const response = await fetch(
+          BASE_URL + "/manager/applications/available-reviewers/",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        ); // Replace with your actual API endpoint
+        const data = await response.json();
+        // Merge fetched reviewers with dummy stats
+        const mergedReviewers = data.data.reviewers.map(
+          (reviewer: any, index: number) => ({
+            id: reviewer.id,
+            name: reviewer.full_name,
+            stats: dummyStats[index % dummyStats.length].stats, // Cycle through dummy stats
+            reviews: dummyStats[index % dummyStats.length].reviews, // Cycle through dummy reviews
+          })
+        );
+        setReviewers(mergedReviewers);
+      } catch (error) {
+        console.error("Error fetching reviewers:", error);
+        // Fallback to dummy reviewers if API call fails
+        setReviewers([
+          {
+            id: "1",
+            name: "Michael Smith",
+            stats: "3 Assigned / Avg. 2.5 days",
+            reviews: 12,
+          },
+          {
+            id: "2",
+            name: "Sarah Lee",
+            stats: "4 Assigned / Avg. 1.8 days",
+            reviews: 15,
+          },
+          {
+            id: "3",
+            name: "John Doe",
+            stats: "2 Assigned / Avg. 3.1 days",
+            reviews: 8,
+          },
+        ]);
+      }
+    };
+
+    fetchReviewers();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="p-8 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manager Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Manager Dashboard
+          </h1>
           <p className="text-gray-500 text-base mt-1">G7 November intake</p>
         </div>
 
@@ -72,13 +132,20 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({ applicati
               </thead>
               <tbody>
                 {applications
-                  .filter((app) => filterStatus === "All" || app.status === filterStatus)
+                  .filter(
+                    (app) =>
+                      filterStatus === "All" || app.status === filterStatus
+                  )
                   .map((app) => (
                     <tr key={app.id} className="border-b hover:bg-gray-50">
                       <td className="py-2 px-1">{app.applicant_name}</td>
-                      <td className="px-1">{new Date().toISOString().split("T")[0]}</td>
                       <td className="px-1">
-                        {app.assigned_reviewer_name ? app.assigned_reviewer_name : "None"}
+                        {new Date().toISOString().split("T")[0]}
+                      </td>
+                      <td className="px-1">
+                        {app.assigned_reviewer_name
+                          ? app.assigned_reviewer_name
+                          : "None"}
                       </td>
                       <td className="px-1">{app.status}</td>
                       <td>
@@ -94,7 +161,10 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({ applicati
             <h2 className="text-lg font-semibold mb-4">Team Performance</h2>
             <div className="space-y-4">
               {reviewers.map((reviewer) => (
-                <div key={reviewer.id} className="flex justify-between items-start">
+                <div
+                  key={reviewer.id}
+                  className="flex justify-between items-start"
+                >
                   <div>
                     <p className="font-medium text-gray-800">{reviewer.name}</p>
                     <p className="text-sm text-gray-500">{reviewer.stats}</p>
@@ -112,7 +182,10 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({ applicati
   );
 };
 
-const StatCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
+const StatCard: React.FC<{ title: string; value: string }> = ({
+  title,
+  value,
+}) => (
   <div className="bg-white rounded-xl shadow-2xl p-6">
     <p className="text-sm text-gray-500">{title}</p>
     <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>
