@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,6 +15,7 @@ const allLinks: HeaderLink[] = [
   { name: "Users", href: "/admin/users", roles: ["admin"] },
   { name: "Cycles", href: "/admin/cycles", roles: ["admin"] },
   { name: "Analytics", href: "/admin/analytics", roles: ["admin"] },
+  
 ];
 
 export const Header = ({ userRole }: { userRole: string }) => {
@@ -27,7 +27,10 @@ export const Header = ({ userRole }: { userRole: string }) => {
 
   return (
     <header className="flex items-center justify-around px-6 py-3 bg-white dark:bg-gray-900 shadow-md">
-      <Image src="/window.svg" alt="Logo" width={36} height={36} />
+      <Link href="/">
+          <img src="/assets/Logo.png" alt="Logo" className="h-10 w-auto" />
+        </Link>
+      {/* <Image src="/window.svg" alt="Logo" width={36} height={36} /> */}
       <nav className="flex space-x-8">
         {filteredLinks.map((link) => {
           const isActive = pathname === link.href;

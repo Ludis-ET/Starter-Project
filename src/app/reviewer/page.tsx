@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 
-export default async function AdminPage() {
+export default async function ReviewerPage() {
   const session = await getServerSession(options);
 
   // Redirect unauthenticated users
@@ -25,7 +25,7 @@ export default async function AdminPage() {
   const redirectUrl = roleRedirects[role] || '/applicant';
 
   // Redirect unauthorized users
-  if (role !== 'admin') {
+  if (role !== 'reviewer') {
     redirect(redirectUrl);
   }
 
@@ -38,12 +38,12 @@ export default async function AdminPage() {
           </Link>
         </div>
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">Admin Dashboard</h2>
+          <h2 className="text-center text-3xl font-bold text-gray-900">Reviewer Dashboard</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome, {session.user.full_name || 'Admin'}! Manage the system here.
+            Welcome, {session.user.full_name || 'Reviewer'}! Review applicant submissions here.
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
-            [Placeholder: Your team can implement admin features here.]
+            [Placeholder: Your team can implement reviewer features here.]
           </p>
         </div>
         <div className="text-center">

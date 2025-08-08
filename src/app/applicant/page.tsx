@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 
-export default async function AdminPage() {
+export default async function ApplicantPage() {
   const session = await getServerSession(options);
 
   // Redirect unauthenticated users
@@ -25,7 +25,7 @@ export default async function AdminPage() {
   const redirectUrl = roleRedirects[role] || '/applicant';
 
   // Redirect unauthorized users
-  if (role !== 'admin') {
+  if (role !== 'applicant') {
     redirect(redirectUrl);
   }
 
@@ -38,15 +38,21 @@ export default async function AdminPage() {
           </Link>
         </div>
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">Admin Dashboard</h2>
+          <h2 className="text-center text-3xl font-bold text-gray-900">Applicant Dashboard</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome, {session.user.full_name || 'Admin'}! Manage the system here.
+            Welcome, {session.user.full_name || 'Applicant'}! Submit your application here.
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
-            [Placeholder: Your team can implement admin features here.]
+            [Placeholder: Your team can implement ApplicationForm.tsx here.]
           </p>
         </div>
-        <div className="text-center">
+        <div className="flex flex-row justify-center text-center gap-5">
+            <Link
+            href="/applicant/Apply"
+            className="inline-block py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Apply
+          </Link>
           <Link
             href="/Signin"
             className="inline-block py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
