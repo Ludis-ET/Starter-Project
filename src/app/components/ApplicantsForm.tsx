@@ -46,7 +46,7 @@ const ApplicantForm = () => {
       const result = await response.json();
       if (response.ok && result.success) {
         setMessage(result.message); 
-          router.push('/Signin'); 
+          router.push('/signin'); 
       } else {
         setError(result.message || 'Registration failed');
       }
@@ -70,7 +70,7 @@ const ApplicantForm = () => {
           <h2 className="text-center text-3xl font-bold text-gray-900">Create a New Applicant Account</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/early-stage-app/signin" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/signin" className="font-medium text-blue-600 hover:text-blue-500">
               sign in to your existing account
             </Link>
           </p>

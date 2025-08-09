@@ -77,7 +77,7 @@ const SignInForm = () => {
               Back to Home
             </Link>{' '}
             |{' '}
-            <Link href="/Register" className="hover:text-blue-500">
+            <Link href="/register" className="hover:text-blue-500">
               Create a new applicant account
             </Link>
           </p>
@@ -138,7 +138,7 @@ const SignInForm = () => {
               </label>
             </div>
             <div className="text-sm">
-              <Link href="/ForgetPassword" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/forgetPassword" className="font-medium text-blue-600 hover:text-blue-500">
                 Forgot Password?
               </Link>
             </div>
