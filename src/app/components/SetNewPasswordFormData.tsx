@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 interface SetNewPasswordFormData {
   newPassword: string;
@@ -29,6 +29,7 @@ const SetNewPasswordForm = () => {
     mode: 'onBlur',
   });
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get('token');
   const [apiMessage, setApiMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
@@ -37,6 +38,13 @@ const SetNewPasswordForm = () => {
   const newPassword = watch('newPassword'); // Watch newPassword to compare with confirmPassword
 
   const onSubmit = async (data: SetNewPasswordFormData) => {
+    if (!API_URL) {
+      setIsSuccess(false);
+      setApiMessage('API URL is not configured. Please contact support.');
+      console.error('Error: NEXT_PUBLIC_API_URL is not defined');
+      return;
+    }
+
     if (!token) {
       setIsSuccess(false);
       setApiMessage('Invalid or missing reset token.');
@@ -59,16 +67,22 @@ const SetNewPasswordForm = () => {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const result: ApiResponse = await response.json();
       setIsSuccess(result.success);
       setApiMessage(result.message);
 
-      if (!result.success) {
+      if (result.success) {
+        router.push('/success');
+      } else {
         console.error('Error:', result.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsSuccess(false);
-      setApiMessage('Failed to connect to the server. Please try again later.');
+      setApiMessage(error.message === 'Failed to fetch' ? 'Failed to connect to the server. Please try again later.' : 'An error occurred. Please try again.');
       console.error('API call failed:', error);
     } finally {
       setIsLoading(false);
