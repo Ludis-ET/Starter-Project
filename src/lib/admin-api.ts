@@ -1,14 +1,16 @@
 // src/lib/admin-api.ts
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from "next-auth/next";
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
     accessToken?: string;
   }
 }
-import { options } from '@/app/api/auth/[...nextauth]/options';
+import { options } from "@/app/api/auth/[...nextauth]/options";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://a2sv-application-platform-backend-team5.onrender.com';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://a2sv-application-platform-backend-team5.onrender.com";
 
 interface AnalyticsData {
   total_applicants: number;
@@ -40,9 +42,15 @@ interface UserResponse {
   message: string;
 }
 
+interface UserTmp {
+  users: User[];
+  limit: number;
+  page: number;
+  total_count: number;
+}
 interface UsersListResponse {
   success: boolean;
-  data: User[];
+  data: UserTmp[];
   message: string;
 }
 
@@ -70,11 +78,11 @@ interface CycleResponse {
   message: string;
 }
 
-interface ListTmp{
+interface ListTmp {
   cycles: Cycle[];
-  limit:number;
-  page:1;
-  total_count:number;
+  limit: number;
+  page: 1;
+  total_count: number;
 }
 
 interface CyclesListResponse {
@@ -101,16 +109,16 @@ export async function fetchAnalytics(): Promise<AnalyticsResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/analytics/`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
-    cache: 'no-store', // Ensure fresh data
+    cache: "no-store", // Ensure fresh data
   });
 
   if (!response.ok) {
@@ -124,16 +132,16 @@ export async function fetchUsers(): Promise<UsersListResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
-  const response = await fetch(`${BASE_URL}/admin/users/`, {
-    method: 'GET',
+  const response = await fetch(`${BASE_URL}/admin/users/?page=1&limit=100`, {
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
-    cache: 'no-store',
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -147,16 +155,16 @@ export async function fetchUserById(userId: string): Promise<UserResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
-    cache: 'no-store',
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -166,18 +174,21 @@ export async function fetchUserById(userId: string): Promise<UserResponse> {
   return response.json();
 }
 
-export async function updateUser(userId: string, userData: UpdateUserData): Promise<UserResponse> {
+export async function updateUser(
+  userId: string,
+  userData: UpdateUserData
+): Promise<UserResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
     body: JSON.stringify(userData),
   });
@@ -193,14 +204,14 @@ export async function deleteUser(userId: string): Promise<UserResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
   });
 
@@ -211,14 +222,13 @@ export async function deleteUser(userId: string): Promise<UserResponse> {
   return response.json();
 }
 
-
 export async function fetchCycles(): Promise<CyclesListResponse> {
   const response = await fetch(`${BASE_URL}/cycles/`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-    cache: 'no-store',
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -228,18 +238,20 @@ export async function fetchCycles(): Promise<CyclesListResponse> {
   return response.json();
 }
 
-export async function createCycle(cycleData: CreateCycleData): Promise<CycleResponse> {
+export async function createCycle(
+  cycleData: CreateCycleData
+): Promise<CycleResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/cycles/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
     body: JSON.stringify(cycleData),
   });
@@ -251,18 +263,21 @@ export async function createCycle(cycleData: CreateCycleData): Promise<CycleResp
   return response.json();
 }
 
-export async function updateCycle(cycleId: number, cycleData: UpdateCycleData): Promise<CycleResponse> {
+export async function updateCycle(
+  cycleId: number,
+  cycleData: UpdateCycleData
+): Promise<CycleResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/cycles/${cycleId}/`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
     body: JSON.stringify(cycleData),
   });
@@ -278,16 +293,19 @@ export async function activateCycle(cycleId: number): Promise<CycleResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
-  const response = await fetch(`${BASE_URL}/admin/cycles/${cycleId}/activate/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
-    },
-  });
+  const response = await fetch(
+    `${BASE_URL}/admin/cycles/${cycleId}/activate/`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to activate cycle: ${response.status}`);
@@ -300,14 +318,14 @@ export async function deleteCycle(cycleId: number): Promise<CycleResponse> {
   const session = await getServerSession(options);
 
   if (!session?.accessToken) {
-    throw new Error('No authentication token available');
+    throw new Error("No authentication token available");
   }
 
   const response = await fetch(`${BASE_URL}/admin/cycles/${cycleId}/`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
   });
 

@@ -43,18 +43,21 @@ export default function UserEditForm({ user, userId }: Props) {
     setIsLoading(true);
 
     try {
-      // Only send non-empty password
-      const updateData = { ...formData };
-      if (!updateData.password) {
-        delete updateData.password;
+      let updateData;
+      if (formData.password) {
+        updateData = { ...formData };
+      } else {
+        const { password, ...rest } = formData;
+        updateData = rest;
       }
 
-      await updateUserClient(userId, updateData);
-      router.push('/admin/users');
+      const response = await updateUserClient(userId, updateData);
+      console.log("User updated successfully:", response);
+      router.push("/admin/users");
       router.refresh();
     } catch (error) {
-      console.error('Failed to update user:', error);
-      alert('Failed to update user. Please try again.');
+      console.error("Failed to update user:", error);
+      alert("Failed to update user. Please try again.");
     } finally {
       setIsLoading(false);
     }
