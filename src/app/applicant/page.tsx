@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { options } from '@/app/api/auth/[...nextauth]/options';
-
 export default async function ApplicantPage() {
   const session = await getServerSession(options);
 
@@ -40,7 +39,11 @@ export default async function ApplicantPage() {
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">Applicant Dashboard</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
+<<<<<<< samson.applicantdashboard
+            Welcome, {session.user?.full_name || 'Applicant'}! Submit your application here.
+=======
             Welcome, {session.user.name || 'Applicant'}! Submit your application here.
+>>>>>>> main
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
             [Placeholder: Your team can implement ApplicationForm.tsx here.]
