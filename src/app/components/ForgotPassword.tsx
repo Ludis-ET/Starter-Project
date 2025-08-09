@@ -3,6 +3,9 @@
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface ForgotPasswordFormData {
   email: string;
@@ -16,10 +19,34 @@ const ForgotPasswordForm = () => {
   } = useForm<ForgotPasswordFormData>({
     mode: 'onBlur',
   });
+  const [apiMessage, setApiMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
 
-  const onSubmit = (data: ForgotPasswordFormData) => {
-    console.log('Reset link requested:', data);
-    // Replace with your API call to send reset link
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          callback_url: window.location.origin + '/reset-password',
+        }),
+      });
+
+      const result = await response.json();
+      setIsSuccess(result.success);
+      setApiMessage(result.message);
+
+      if (!result.success) {
+        console.error('Error:', result.message);
+      }
+    } catch (error) {
+      setIsSuccess(false);
+      setApiMessage('An error occurred. Please try again.');
+      console.error('API call failed:', error);
+    }
   };
 
   return (
@@ -65,6 +92,13 @@ const ForgotPasswordForm = () => {
             {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
           </div>
 
+          {/* API Response Message */}
+          {apiMessage && (
+            <p className={`text-center text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+              {apiMessage}
+            </p>
+          )}
+
           {/* Submit Button */}
           <div>
             <button
@@ -77,7 +111,7 @@ const ForgotPasswordForm = () => {
 
           {/* Back to Login */}
           <div className="text-center text-sm">
-            <Link href="/Signin" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/signin" className="font-medium text-blue-600 hover:text-blue-500">
               Back to Login
             </Link>
           </div>

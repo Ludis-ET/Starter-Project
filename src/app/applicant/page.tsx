@@ -8,7 +8,7 @@ export default async function ApplicantPage() {
 
   // Redirect unauthenticated users
   if (!session) {
-    redirect('/Signin');
+    redirect('/signin');
   }
 
   // Define role-specific redirect URLs
@@ -39,7 +39,11 @@ export default async function ApplicantPage() {
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">Applicant Dashboard</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
+<<<<<<< samson.applicantdashboard
             Welcome, {session.user?.full_name || 'Applicant'}! Submit your application here.
+=======
+            Welcome, {session.user.name || 'Applicant'}! Submit your application here.
+>>>>>>> main
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
             [Placeholder: Your team can implement ApplicationForm.tsx here.]
@@ -47,13 +51,13 @@ export default async function ApplicantPage() {
         </div>
         <div className="flex flex-row justify-center text-center gap-5">
             <Link
-            href="/applicant/Apply"
+            href="/applicant/apply"
             className="inline-block py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Apply
           </Link>
           <Link
-            href="/Signin"
+            href="/signin"
             className="inline-block py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Sign Out
