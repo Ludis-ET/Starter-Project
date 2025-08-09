@@ -528,7 +528,7 @@ const ApplicationForm = () => {
 
     if (status !== "authenticated") {
       setSubmissionError("You must be signed in to submit the application");
-      router.push("/Signin");
+      router.push("/signin");
       return;
     }
 
