@@ -48,9 +48,6 @@ export default async function AdminPage() {
                 <div className="text-sm text-gray-500">
                   Last updated: {new Date().toLocaleDateString()}
                 </div>
-                <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
-                  Refresh Data
-                </button>
               </div>
             </div>
           </div>

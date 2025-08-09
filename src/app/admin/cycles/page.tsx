@@ -6,7 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import CyclesClient from "@/components/admin/CyclesClient";
 
 interface Props {
-  searchParams: URLSearchParams | Record<string, string | undefined>;
+  searchParams: Promise<URLSearchParams | Record<string, string | undefined>>;
 }
 
 const ITEMS_PER_PAGE = 6;
@@ -28,25 +28,26 @@ export default async function CyclesPage({ searchParams }: Props) {
     cycles = [];
   }
 
-  // Normalize searchParams to handle both URLSearchParams and record types
+  // Await searchParams before using
+  const params = await searchParams;
   const filter =
-    searchParams instanceof URLSearchParams
-      ? searchParams.get("filter") ?? "all"
-      : searchParams.filter ?? "all";
+    params instanceof URLSearchParams
+      ? params.get("filter") ?? "all"
+      : params.filter ?? "all";
   const pageStr =
-    searchParams instanceof URLSearchParams
-      ? searchParams.get("page") ?? "1"
-      : searchParams.page ?? "1";
+    params instanceof URLSearchParams
+      ? params.get("page") ?? "1"
+      : params.page ?? "1";
   const currentPage = parseInt(pageStr, 10);
 
   // Apply filter
   let filteredCycles = [...cycles];
   if (filter !== "all") {
-    if (filter === "active")
+    if (filter === "active") {
       filteredCycles = filteredCycles.filter((c) => c.is_active);
-    else if (filter === "inactive")
+    } else if (filter === "inactive") {
       filteredCycles = filteredCycles.filter((c) => !c.is_active);
-    else if (filter === "upcoming") {
+    } else if (filter === "upcoming") {
       const now = new Date();
       filteredCycles = filteredCycles.filter(
         (c) => new Date(c.start_date) > now

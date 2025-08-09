@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CycleCard from "./CycleCard";
 
 interface Cycle {
   id: number;
@@ -66,7 +67,7 @@ export default function CyclesClient({ cycles, totalCycles, currentPage, totalPa
           <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Cycles</h3>
           <p className="text-red-600">{error}</p>
         </div>
-      ) : cycles.length === 0 ? (
+      ) : cycles && cycles.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <p className="text-gray-500">No cycles found</p>
           <Link
@@ -79,7 +80,7 @@ export default function CyclesClient({ cycles, totalCycles, currentPage, totalPa
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {cycles.map((cycle) => (
+            {cycles && cycles.map((cycle) => (
               <CycleCard key={cycle.id} cycle={cycle} />
             ))}
           </div>
