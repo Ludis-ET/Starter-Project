@@ -14,8 +14,8 @@ interface Props {
 const Page = async ({ params }: Props) => {
   const slug = params.slug;
 
-    const session = await getServerSession(options);
-    const accessToken = session?.accessToken;
+  const session = await getServerSession(options);
+  const accessToken = session?.accessToken;
 
   const res = await fetch(`${BASE_URL}/manager/applications/${slug}`, {
     headers: {
@@ -26,14 +26,20 @@ const Page = async ({ params }: Props) => {
 
   const data = await res.json();
   const details = data.data.application;
-  console.log(details);
+  const review = data.data.review;
+  const scores: string[] = [];
 
-  if (!details) return <h2>No Details</h2>;
-
+  if (review) {
+    scores.push(review.resume_score);
+    scores.push(review.essay_about_you_score);
+    scores.push(review.essay_why_a2sv_score);
+    scores.push(review.behavioral_interview_score);
+    console.log(data.data);
+  }
   return (
     <div className="p-10">
       <h1 className="text-3xl font-extrabold mb-10 w-[1250px] mx-auto">
-        Manage: Abel Tadesse
+        Manage: {details.applicant_name}
       </h1>
 
       <div className="flex justify-center gap-10 flex-wrap">
@@ -58,9 +64,9 @@ const Page = async ({ params }: Props) => {
               <div>
                 <div className="text-sm text-gray-500">Coding Profiles</div>
                 <div className="flex gap-3 font-medium">
-                  <p>GitHub</p>
-                  <p>LeetCode</p>
-                  <p>Codeforces</p>
+                  <Link href=''>GitHub</Link>
+                  <Link href={details.leetcode_handle}>LeetCode</Link>
+                  <Link href={details.codeforces_handle}>Codeforces</Link>
                 </div>
               </div>
 
@@ -92,33 +98,48 @@ const Page = async ({ params }: Props) => {
 
           {/* Reviewer Feedback */}
           <div className="bg-white border rounded-xl shadow p-6 w-[900px]">
-            <h2 className="text-xl font-semibold mb-4">
-              Reviewer's Feedback (Jane R.)
-            </h2>
+            {review ? (
+              <h2 className="text-xl font-semibold mb-4">
+                Reviewer's Feedback (Jane R.)
+              </h2>
+            ) : (
+              <h2 className="text-xl font-semibold mb-4">
+                No yet reviewed ...
+              </h2>
+            )}
 
-            <div className="mb-4">
-              <div className="text-sm text-gray-500">Activity Check</div>
-              <p>Pass - 50 LC, 35 CF, 30 days active</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              {[1, 2, 3, 4].map((_, i) => (
-                <div key={i}>
-                  <div className="text-sm text-gray-500">Resume Score</div>
-                  <p>85/100</p>
+            {review && (
+              <>
+                <div className="mb-4">
+                  <div className="text-sm text-gray-500">Activity Check</div>
+                  <p>{review.activity_check_notes}</p>
                 </div>
-              ))}
-            </div>
 
-            <div>
-              <div className="text-sm text-gray-500">Interviewer Notes</div>
-              <p>Strong candidate with excellent problem-solving skills.</p>
-            </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {[
+                    "Resume Score",
+                    "Essay Score",
+                    "Tech Interview",
+                    "Behavioral",
+                  ].map((title, i) => (
+                    <div key={i}>
+                      <div className="text-sm text-gray-500">{title}</div>
+                      <p>{scores[i]}/100</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-500">Interviewer Notes</div>
+                  <p>{review.interview_notes}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Manager Actions Section (Client-side buttons) */}
-        <ManagerActions slug={slug} accessToken={accessToken} />
+        <ManagerActions slug={slug} accessToken={accessToken} initialStatus={details.status} />
       </div>
     </div>
   );

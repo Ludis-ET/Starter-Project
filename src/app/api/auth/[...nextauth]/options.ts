@@ -166,8 +166,6 @@ export const options: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 1 day
   },
-
-
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
@@ -197,7 +195,7 @@ export const options: NextAuthOptions = {
           const res = await fetch(`${API_URL}/auth/token/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh: token.refreshToken }),
+            body: JSON.stringify({ refreshToken: token.refreshToken }),
           });
           const result = await res.json();
           console.log('Refresh response:', {

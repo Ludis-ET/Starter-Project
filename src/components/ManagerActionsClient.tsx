@@ -1,16 +1,22 @@
 'use client';
 
 import React from "react";
+import { useState } from "react";
 
 const BASE_URL = "https://a2sv-application-platform-backend-team5.onrender.com";
 
 interface Props {
   slug: string;
   accessToken: string;
+  initialStatus: string;
 }
 
-const ManagerActions = ({ slug, accessToken }: Props) => {
+const ManagerActions = ({ slug, accessToken, initialStatus }: Props) => {
+  const [status, setStatus] = useState<string>(initialStatus)
+
   const handleRejection = async () => {
+    const prevStatus = status;
+    setStatus("rejected");
     try {
       await fetch(`${BASE_URL}/manager/applications/${slug}/decide/`, {
         method: "PATCH",
@@ -26,10 +32,14 @@ const ManagerActions = ({ slug, accessToken }: Props) => {
       alert("Rejected successfully");
     } catch (err) {
       console.error("Rejection failed", err);
+      setStatus(prevStatus);
+
     }
   };
 
   const handleAccept = async () => {
+    const prevStatus = status;
+    setStatus("accepted")
     try {
       await fetch(`${BASE_URL}/manager/applications/${slug}/decide/`, {
         method: "PATCH",
@@ -45,15 +55,16 @@ const ManagerActions = ({ slug, accessToken }: Props) => {
       alert("Accepted successfully");
     } catch (err) {
       console.error("Accept failed", err);
+      setStatus(prevStatus);
     }
   };
 
   return (
     <div className="w-[300px] bg-white border rounded-xl shadow p-6 space-y-4 h-fit">
-      <h2 className="text-xl font-semibold">Manager Actions</h2>
+      <h2 className="text-xl font-semibold">Manager Action</h2>
 
       {/* Reviewer Assignment */}
-      <div>
+      {/* <div>
         <p className="text-sm text-gray-600 mb-2">Assign Reviewer</p>
         <div className="bg-gray-100 px-4 py-2 rounded-xl font-medium">
           Jane R.
@@ -61,8 +72,13 @@ const ManagerActions = ({ slug, accessToken }: Props) => {
         <button className="mt-2 w-full bg-violet-700 text-white py-1 rounded hover:bg-violet-800 transition">
           Confirm
         </button>
+      </div> */}
+      <div>
+        <p className="text-sm text-gray-600 mb-2">Applicant's Status</p>
+        <div className="bg-gray-100 px-4 py-2 rounded-xl font-medium">
+          {status}
+        </div>
       </div>
-
       <hr />
 
       {/* Final Decision */}
