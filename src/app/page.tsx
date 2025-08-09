@@ -1,5 +1,4 @@
 import Image from "next/image";
-// import Header from "./components/Header"
 import ApplicantForm from "./components/ApplicantsForm";
 import SignInForm from "./components/SignInForm";
 import Header from "./components/Header";
