@@ -3,10 +3,20 @@
 import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface SetNewPasswordFormData {
   newPassword: string;
   confirmPassword: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data?: string;
+  message: string;
 }
 
 const SetNewPasswordForm = () => {
@@ -18,12 +28,51 @@ const SetNewPasswordForm = () => {
   } = useForm<SetNewPasswordFormData>({
     mode: 'onBlur',
   });
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+  const [apiMessage, setApiMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const newPassword = watch('newPassword'); // Watch newPassword to compare with confirmPassword
 
-  const onSubmit = (data: SetNewPasswordFormData) => {
-    console.log('New password set:', data);
-    // Replace with your API call to update the password
+  const onSubmit = async (data: SetNewPasswordFormData) => {
+    if (!token) {
+      setIsSuccess(false);
+      setApiMessage('Invalid or missing reset token.');
+      return;
+    }
+
+    setIsLoading(true);
+    setApiMessage(null);
+    setIsSuccess(null);
+
+    try {
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          new_password: data.newPassword,
+        }),
+      });
+
+      const result: ApiResponse = await response.json();
+      setIsSuccess(result.success);
+      setApiMessage(result.message);
+
+      if (!result.success) {
+        console.error('Error:', result.message);
+      }
+    } catch (error) {
+      setIsSuccess(false);
+      setApiMessage('Failed to connect to the server. Please try again later.');
+      console.error('API call failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,8 +108,12 @@ const SetNewPasswordForm = () => {
               }`}
               placeholder="********"
               {...register('newPassword', {
-                required: 'New password is required',
-                minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                // required: 'New password is required',
+                // minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                // pattern: {
+                //   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                //   message: 'Password must include uppercase, lowercase, number, and special character',
+                // },
               })}
             />
             {errors.newPassword && (
@@ -90,13 +143,25 @@ const SetNewPasswordForm = () => {
             )}
           </div>
 
+          {/* API Response Message */}
+          {apiMessage && (
+            <p className={`text-center text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+              {apiMessage}
+            </p>
+          )}
+
           {/* Submit Button */}
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isLoading || !token}
+              aria-disabled={isLoading || !token}
+              aria-label="Set new password"
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                isLoading || !token ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
-              Set Password
+              {isLoading ? 'Submitting...' : 'Set Password'}
             </button>
           </div>
 
