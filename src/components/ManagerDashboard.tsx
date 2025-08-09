@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomDropdown from "./CustomDropdown";
+import { useSession, signOut, getSession } from "next-auth/react";
+import { useMemo } from "react";
 
 interface Reviewer {
   id: string;
@@ -27,39 +29,154 @@ const dummyStats = [
 ];
 
 const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
-  applications,
+  applications: initialApplications,
 }) => {
+  const [applications, setApplications] =
+    useState<Application[]>(initialApplications);
   const [filterStatus, setFilterStatus] = useState("All");
   const [reviewers, setReviewers] = useState<Reviewer[]>([]);
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-  const accessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMWE3YWYzZC1mOWMzLTQzYWQtYWFkYy01N2EzNGFkZmU3NzciLCJleHAiOjE3NTQ1OTg2NjcsInR5cGUiOiJhY2Nlc3MifQ.8xjntUhXds2dFkn7fdQhkRna9_LjPxcHirFkAwv7JPQ";
+  const { data: session, status, update } = useSession();
+  const accessToken = session?.accessToken;
+
+  const refetchApplications = async () => {
+    if (status !== "authenticated" || !accessToken) {
+      console.error("No valid session or access token");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/manager/applications/`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.status === 401) {
+        if (session?.refreshToken) {
+          await update();
+          const updatedSession = await getSession();
+          if (!updatedSession?.accessToken) {
+            throw new Error("Failed to get updated session");
+          }
+          const retryResponse = await fetch(
+            `${BASE_URL}/manager/applications/`,
+            {
+              headers: {
+                Authorization: `Bearer ${updatedSession.accessToken}`,
+              },
+            }
+          );
+          if (!retryResponse.ok) {
+            throw new Error(
+              `Retry failed with status: ${retryResponse.status}`
+            );
+          }
+          const retryData = await retryResponse.json();
+          if (retryData.success) {
+            setApplications(retryData.data.applications);
+          } else {
+            console.error("Retry failed:", retryData.message);
+          }
+        } else {
+          console.error("No refresh token available");
+          await signOut({ callbackUrl: "/Signin" });
+        }
+      } else if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      } else {
+        const data = await response.json();
+        setApplications(data.data.applications);
+      }
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      setApplications(initialApplications);
+    }
+  };
+
+  useEffect(() => {
+    refetchApplications();
+  }, [session, status, update]);
 
   useEffect(() => {
     const fetchReviewers = async () => {
+      if (status !== "authenticated" || !session?.accessToken) {
+        console.error("No valid session or access token");
+        return;
+      }
+
       try {
         const response = await fetch(
-          BASE_URL + "/manager/applications/available-reviewers/",
+          `${BASE_URL}/manager/applications/available-reviewers/`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${session.accessToken}`,
             },
           }
-        ); // Replace with your actual API endpoint
-        const data = await response.json();
-        // Merge fetched reviewers with dummy stats
-        const mergedReviewers = data.data.reviewers.map(
-          (reviewer: any, index: number) => ({
-            id: reviewer.id,
-            name: reviewer.full_name,
-            stats: dummyStats[index % dummyStats.length].stats, // Cycle through dummy stats
-            reviews: dummyStats[index % dummyStats.length].reviews, // Cycle through dummy reviews
-          })
         );
-        setReviewers(mergedReviewers);
+
+        if (response.status === 401) {
+          if (session?.refreshToken) {
+            try {
+              await update();
+              const updatedSession = await getSession();
+              if (!updatedSession?.accessToken) {
+                throw new Error("Failed to get updated session");
+              }
+
+              const retryResponse = await fetch(
+                `${BASE_URL}/manager/applications/available-reviewers/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${updatedSession.accessToken}`,
+                  },
+                }
+              );
+
+              if (!retryResponse.ok) {
+                throw new Error(
+                  `Retry failed with status: ${retryResponse.status}`
+                );
+              }
+
+              const retryData = await retryResponse.json();
+              if (retryData.success) {
+                const mergedReviewers = retryData.data.reviewers.map(
+                  (reviewer: any, index: number) => ({
+                    id: reviewer.id,
+                    name: reviewer.full_name,
+                    stats: dummyStats[index % dummyStats.length].stats,
+                    reviews: dummyStats[index % dummyStats.length].reviews,
+                  })
+                );
+                setReviewers(mergedReviewers);
+              } else {
+                console.error("Retry failed:", retryData.message);
+              }
+            } catch (refreshError) {
+              console.error("Error refreshing token:", refreshError);
+              await signOut({ callbackUrl: "/Signin" });
+            }
+          } else {
+            console.error("No refresh token available");
+            await signOut({ callbackUrl: "/Signin" });
+          }
+        } else if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        } else {
+          const data = await response.json();
+          const mergedReviewers = data.data.reviewers.map(
+            (reviewer: any, index: number) => ({
+              id: reviewer.id,
+              name: reviewer.full_name,
+              stats: dummyStats[index % dummyStats.length].stats,
+              reviews: dummyStats[index % dummyStats.length].reviews,
+            })
+          );
+          setReviewers(mergedReviewers);
+        }
       } catch (error) {
         console.error("Error fetching reviewers:", error);
-        // Fallback to dummy reviewers if API call fails
         setReviewers([
           {
             id: "1",
@@ -84,7 +201,16 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
     };
 
     fetchReviewers();
-  }, []);
+  }, [session, status, update]);
+
+  const statusFrequencies = useMemo(() => {
+    return applications.reduce((acc, application) => {
+      const status = application.status;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [applications]);
+  statusFrequencies["All"] = applications.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,10 +223,22 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Applications" value="132" />
-          <StatCard title="Under Review" value="45" />
-          <StatCard title="Interview Stage" value="23" />
-          <StatCard title="Accepted" value="12" />
+          <StatCard
+            title="Total Applications"
+            value={statusFrequencies["All"] || 0}
+          />
+          <StatCard
+            title="Under Review"
+            value={statusFrequencies["in_progress"] || 0}
+          />
+          <StatCard
+            title="Interview Stage"
+            value={statusFrequencies["pending_review"] || 0}
+          />
+          <StatCard
+            title="Accepted"
+            value={statusFrequencies["accepted"] || 0}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -112,11 +250,14 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="border border-gray-300 rounded-md p-2 text-sm"
               >
-                <option value="All">Filter by Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Reviewed">Reviewed</option>
-                <option value="Interview">Interview</option>
-                <option value="Accepted">Accepted</option>
+                <option value="All" hidden>
+                  Filter by Status
+                </option>
+                <option value="all">All</option>
+                <option value="pending_review">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="in_progress">In Progress</option>
+                <option value="accepted">Accepted</option>
               </select>
             </div>
 
@@ -134,7 +275,9 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                 {applications
                   .filter(
                     (app) =>
-                      filterStatus === "All" || app.status === filterStatus
+                      filterStatus === "All" ||
+                      filterStatus === "all" ||
+                      app.status === filterStatus
                   )
                   .map((app) => (
                     <tr key={app.id} className="border-b hover:bg-gray-50">
@@ -149,7 +292,11 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                       </td>
                       <td className="px-1">{app.status}</td>
                       <td>
-                        <CustomDropdown reviewers={reviewers} app={app} />
+                        <CustomDropdown
+                          reviewers={reviewers}
+                          app={app}
+                          refetchApplications={refetchApplications}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -182,7 +329,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
   );
 };
 
-const StatCard: React.FC<{ title: string; value: string }> = ({
+const StatCard: React.FC<{ title: string; value: number }> = ({
   title,
   value,
 }) => (

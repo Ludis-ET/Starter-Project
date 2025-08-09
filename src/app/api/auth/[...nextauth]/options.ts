@@ -78,6 +78,7 @@ export const options: NextAuthOptions = {
             body: JSON.stringify({ refreshToken: token.refreshToken }),
           });
           const result = await res.json();
+          console.log(result);
           if (res.ok && result.success && result.data) {
             token.accessToken = result.data.access;
             token.refreshToken = result.data.refresh;

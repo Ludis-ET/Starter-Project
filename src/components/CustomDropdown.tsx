@@ -1,4 +1,5 @@
 'use client';
+import { useSession, signOut, getSession } from "next-auth/react"; 
 
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -35,16 +36,22 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const assignRef = useRef<HTMLDivElement>(null);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  const { data: session, status, update } = useSession(); // NEW: Include update from useSession
+  const accessToken = session?.accessToken
 
   const handleAssignReviewer = async (reviewerId: string, reviewerName: string) => {
     try {
-      const response = await fetch(`/api/applications/${app.id}/assign`, {
-        method: 'POST', // or 'PATCH' depending on your API
+      const response = await fetch(BASE_URL + `/manager/applications/${app.id}/assign`, {
+        method: 'PATCH', // or 'PATCH' depending on your API
         headers: {
           'Content-Type': 'application/json',
+          Authorization : `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ reviewerId }),
+        body: JSON.stringify({ reviewer_id : reviewerId }),
       });
+      console.log(response, reviewers)
       if (!response.ok) {
         throw new Error('Failed to assign reviewer');
       }
