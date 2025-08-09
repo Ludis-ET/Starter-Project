@@ -1,123 +1,79 @@
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
-import { options } from '@/app/api/auth/[...nextauth]/options';
-import { fetchCycles } from '@/lib/admin-api';
-import AdminHeader from '@/components/admin/AdminHeader';
-import CycleCard from '@/components/admin/CycleCard';
-import Link from 'next/link';
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
+import { options } from "@/app/api/auth/[...nextauth]/options";
+import { fetchCycles } from "@/lib/admin-api";
+import AdminHeader from "@/components/admin/AdminHeader";
+import CyclesClient from "@/components/admin/CyclesClient";
 
-export default async function CyclesPage() {
+interface Props {
+  searchParams: URLSearchParams | Record<string, string | undefined>;
+}
+
+const ITEMS_PER_PAGE = 6;
+
+export default async function CyclesPage({ searchParams }: Props) {
   const session = await getServerSession(options);
 
-  // Redirect unauthenticated users
-  if (!session) {
-    redirect('/Signin');
-  }
-
-  // Check if user is admin
-  if (session.user?.role !== 'admin') {
-    redirect('/');
-  }
+  if (!session) redirect("/Signin");
+  if (session.user?.role !== "admin") redirect("/");
 
   let cycles: any[] = [];
   let error = null;
 
   try {
     const response = await fetchCycles();
-    // console.log('Fetched cycles:', response.data as any);
     cycles = Array.isArray(response?.data.cycles) ? response.data.cycles : [];
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to fetch cycles';
-    console.error('Cycles fetch error:', err);
+    error = err instanceof Error ? err.message : "Failed to fetch cycles";
     cycles = [];
   }
+
+  // Normalize searchParams to handle both URLSearchParams and record types
+  const filter =
+    searchParams instanceof URLSearchParams
+      ? searchParams.get("filter") ?? "all"
+      : searchParams.filter ?? "all";
+  const pageStr =
+    searchParams instanceof URLSearchParams
+      ? searchParams.get("page") ?? "1"
+      : searchParams.page ?? "1";
+  const currentPage = parseInt(pageStr, 10);
+
+  // Apply filter
+  let filteredCycles = [...cycles];
+  if (filter !== "all") {
+    if (filter === "active")
+      filteredCycles = filteredCycles.filter((c) => c.is_active);
+    else if (filter === "inactive")
+      filteredCycles = filteredCycles.filter((c) => !c.is_active);
+    else if (filter === "upcoming") {
+      const now = new Date();
+      filteredCycles = filteredCycles.filter(
+        (c) => new Date(c.start_date) > now
+      );
+    }
+  }
+
+  // Pagination
+  const totalPages = Math.ceil(filteredCycles.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedCycles = filteredCycles.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader userRole="Admin User" />
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Application Cycles</h1>
-                <p className="text-gray-600 mt-2">Create and manage recruitment cycles</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Filter:</span>
-                  <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                    <option value="all">All Cycles</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="upcoming">Upcoming</option>
-                  </select>
-                </div>
-                <Link
-                  href="/admin/cycles/new"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
-                >
-                  Create New Cycle
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Cycles</h3>
-              <p className="text-red-600">{error}</p>
-            </div>
-          ) : (
-            <>
-              {cycles.length === 0 ? (
-                <div className="bg-white rounded-lg shadow p-12 text-center">
-                  <p className="text-gray-500">No cycles found</p>
-                  <Link
-                    href="/admin/cycles/new"
-                    className="mt-4 inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md"
-                  >
-                    Create First Cycle
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  {/* Cycles Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {cycles.map((cycle: any) => (
-                      <CycleCard key={cycle.id} cycle={cycle} />
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between bg-white px-6 py-3 rounded-lg shadow">
-                    <div className="text-sm text-gray-700">
-                      Showing 1 to {cycles.length} of {cycles.length} results
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-500 bg-gray-50 cursor-not-allowed">
-                        &lt;
-                      </button>
-                      <button className="px-3 py-1 text-sm border border-blue-600 rounded-md text-white bg-blue-600">
-                        1
-                      </button>
-                      <button className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                        2
-                      </button>
-                      <button className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                        3
-                      </button>
-                      <button className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                        &gt;
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </div>
+      <div className="p-8 max-w-7xl mx-auto">
+        <CyclesClient
+          cycles={paginatedCycles}
+          totalCycles={filteredCycles.length}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          filter={filter}
+          error={error}
+        />
       </div>
     </div>
   );

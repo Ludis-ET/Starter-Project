@@ -28,6 +28,7 @@ export default async function UserDetailPage({ params }: Props) {
   try {
     const response = await fetchUserById(id);
     user = response.data;
+    
   } catch (err) {
     if (err instanceof Error && err.message.includes("404")) {
       notFound();
