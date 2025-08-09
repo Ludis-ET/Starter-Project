@@ -77,7 +77,7 @@ const SignInForm = () => {
               Back to Home
             </Link>{' '}
             |{' '}
-            <Link href="/Register" className="hover:text-blue-500">
+            <Link href="/register" className="hover:text-blue-500">
               Create a new applicant account
             </Link>
           </p>
@@ -118,7 +118,7 @@ const SignInForm = () => {
               placeholder="********"
               {...register('password', {
                 required: 'Password is required',
-                minLength: { value: 3, message: 'Password must be at least 8 characters' },
+                minLength: { value: 4, message: 'Password must be at least 8 characters' },
               })}
             />
             {errors.password && (
@@ -138,7 +138,7 @@ const SignInForm = () => {
               </label>
             </div>
             <div className="text-sm">
-              <Link href="/ForgetPassword" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link href="/forgetPassword" className="font-medium text-blue-600 hover:text-blue-500">
                 Forgot Password?
               </Link>
             </div>

@@ -1,6 +1,10 @@
+'use client'
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 const Header = () => {
+  const { data: session } = useSession();
+
   return (
     <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
       {/* Logo Section */}
@@ -30,12 +34,21 @@ const Header = () => {
         >
           Contact
         </Link>
-        <Link
-          href="/signin"
-          className="text-gray-600 hover:text-blue-600 transition-colors font-semibold"
-        >
-          Sign In
-        </Link>
+        {session ? (
+          <button
+            onClick={() => signOut()}
+            className="text-gray-600 hover:text-blue-600 transition-colors font-semibold"
+          >
+            Sign Out
+          </button>
+        ) : (
+          <Link
+            href="/signin"
+            className="text-gray-600 hover:text-blue-600 transition-colors font-semibold"
+          >
+            Sign In
+          </Link>
+        )}
       </nav>
     </header>
   );
