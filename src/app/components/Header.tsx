@@ -31,7 +31,7 @@ const Header = () => {
           Contact
         </Link>
         <Link
-          href="/signin"
+          href="/Signin"
           className="text-gray-600 hover:text-blue-600 transition-colors font-semibold"
         >
           Sign In

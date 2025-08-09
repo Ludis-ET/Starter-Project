@@ -27,8 +27,9 @@ const Page = async ({ params }: Props) => {
   const data = await res.json();
   const details = data.data.application;
   const review = data.data.review;
+  const scores: string[] = [];
+
   if (review) {
-    const scores: string[] = [];
     scores.push(review.resume_score);
     scores.push(review.essay_about_you_score);
     scores.push(review.essay_why_a2sv_score);
@@ -63,9 +64,9 @@ const Page = async ({ params }: Props) => {
               <div>
                 <div className="text-sm text-gray-500">Coding Profiles</div>
                 <div className="flex gap-3 font-medium">
-                  <p>GitHub</p>
-                  <p>LeetCode</p>
-                  <p>Codeforces</p>
+                  <Link href=''>GitHub</Link>
+                  <Link href={details.leetcode_handle}>LeetCode</Link>
+                  <Link href={details.codeforces_handle}>Codeforces</Link>
                 </div>
               </div>
 
@@ -138,7 +139,7 @@ const Page = async ({ params }: Props) => {
         </div>
 
         {/* Manager Actions Section (Client-side buttons) */}
-        <ManagerActions slug={slug} accessToken={accessToken} />
+        <ManagerActions slug={slug} accessToken={accessToken} initialStatus={details.status} />
       </div>
     </div>
   );
