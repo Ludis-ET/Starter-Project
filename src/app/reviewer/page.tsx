@@ -40,7 +40,7 @@ export default async function ReviewerPage() {
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">Reviewer Dashboard</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome, {session.user.full_name || 'Reviewer'}! Review applicant submissions here.
+            Welcome, {session.user.name || 'Reviewer'}! Review applicant submissions here.
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
             [Placeholder: Your team can implement reviewer features here.]
