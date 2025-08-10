@@ -43,7 +43,7 @@ const Header = () => {
           </button>
         ) : (
           <Link
-            href="/Signin"
+            href="/signin"
             className="text-gray-600 hover:text-blue-600 transition-colors font-semibold"
           >
             Sign In

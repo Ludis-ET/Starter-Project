@@ -80,7 +80,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
           }
         } else {
           console.error("No refresh token available");
-          await signOut({ callbackUrl: "/Signin" });
+          await signOut({ callbackUrl: "/signin" });
         }
       } else if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -155,11 +155,11 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
               }
             } catch (refreshError) {
               console.error("Error refreshing token:", refreshError);
-              await signOut({ callbackUrl: "/Signin" });
+              await signOut({ callbackUrl: "/signin" });
             }
           } else {
             console.error("No refresh token available");
-            await signOut({ callbackUrl: "/Signin" });
+            await signOut({ callbackUrl: "/signin" });
           }
         } else if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

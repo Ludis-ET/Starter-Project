@@ -16,7 +16,7 @@
 //     async (url: string, options: FetchOptions = {}, maxRetries: number = 1): Promise<Response> => {
 //       if (status !== 'authenticated' || !session?.accessToken) {
 //         await signOut({ redirect: false });
-//         router.push('/Signin');
+//         router.push('/signin');
 //         throw new Error('You must be signed in to make this request');
 //       }
 
@@ -28,7 +28,7 @@
 //         const refreshedSession = await update();
 //         if (!refreshedSession?.accessToken) {
 //           await signOut({ redirect: false });
-//           router.push('/Signin');
+//           router.push('/signin');
 //           throw new Error('Session expired. Please sign in again.');
 //         }
 //         currentAccessToken = refreshedSession.accessToken;
@@ -57,7 +57,7 @@
 //         } catch (error) {
 //           console.error('Token refresh error:', error);
 //           await signOut({ redirect: false });
-//           router.push('/Signin');
+//           router.push('/signin');
 //           throw new Error('Session expired. Please sign in again.');
 //         }
 //       }
@@ -94,7 +94,7 @@ export const useFetchWithAuth = () => {
       if (status !== 'authenticated' || !session?.accessToken) {
         console.error('Unauthenticated or missing accessToken');
         await signOut({ redirect: false });
-        router.push('/Signin');
+        router.push('/signin');
         throw new Error('You must be signed in to make this request');
       }
 
@@ -114,7 +114,7 @@ export const useFetchWithAuth = () => {
         if (!refreshedSession?.accessToken) {
           console.error('Refresh failed: No access token');
           await signOut({ redirect: false });
-          router.push('/Signin');
+          router.push('/signin');
           throw new Error('Session expired. Please sign in again.');
         }
         currentAccessToken = refreshedSession.accessToken;
@@ -151,13 +151,13 @@ export const useFetchWithAuth = () => {
         } catch (error) {
           console.error('Token refresh error:', error);
           await signOut({ redirect: false });
-          router.push('/Signin');
+          router.push('/signin');
           throw new Error('Session expired. Please sign in again.');
         }
       } else if (response.status === 401) {
         console.error('No refresh token or max retries exceeded');
         await signOut({ redirect: false });
-        router.push('/Signin');
+        router.push('/signin');
         throw new Error('Session expired. Please sign in again.');
       }
 

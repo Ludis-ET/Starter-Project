@@ -15,7 +15,7 @@ export default async function UserDetailPage({ params }: Props) {
   const session = await getServerSession(options);
 
   if (!session) {
-    redirect("/Signin");
+    redirect("/signin");
   }
 
   if (session.user?.role !== "admin") {

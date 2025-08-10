@@ -10,7 +10,7 @@ export default async function AnalyticsPage() {
 
   // Redirect unauthenticated users
   if (!session) {
-    redirect('/Signin');
+    redirect('/signin');
   }
 
   // Check if user is admin

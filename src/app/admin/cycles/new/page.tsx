@@ -10,7 +10,7 @@ export default async function CreateCyclePage() {
 
   // Redirect unauthenticated users
   if (!session) {
-    redirect('/Signin');
+    redirect('/signin');
   }
 
   // Check if user is admin

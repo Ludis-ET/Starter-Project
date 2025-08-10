@@ -12,7 +12,7 @@ export default async function AdminPage() {
 
   // Redirect unauthenticated users
   if (!session) {
-    redirect('/Signin');
+    redirect('/signin');
   }
 
   // Define role-specific redirect URLs

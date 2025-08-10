@@ -1,6 +1,6 @@
 import React from 'react'
 import Header from '@/app/components/Header'
-import SignInForm from '@/app/components/SignInForm'
+import SignInForm from '@/app/components/signinForm'
 
 
 const signin = () => {

@@ -13,7 +13,7 @@ interface EditCyclePageProps {
 export default async function EditCyclePage({ params }: EditCyclePageProps) {
   const session = await getServerSession(options);
 
-  if (!session) redirect("/Signin");
+  if (!session) redirect("/signin");
   if (session.user?.role !== "admin") redirect("/");
 
   let cycles: any[] = [];

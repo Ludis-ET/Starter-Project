@@ -9,7 +9,7 @@ import Link from "next/link";
 export default async function UsersPage() {
   const session = await getServerSession(options);
 
-  if (!session) redirect("/Signin");
+  if (!session) redirect("/signin");
   if (session.user?.role !== "admin") redirect("/");
 
   let users: any[] = [];

@@ -11,8 +11,8 @@
 //     console.log("middleware")
 //     // Redirect unauthenticated users to sign-in
 //     if (!session) {
-//       console.log(`Middleware: No session, redirecting to /Signin from ${pathname}`);
-//       return NextResponse.redirect(new URL('/Signin', request.url));
+//       console.log(`Middleware: No session, redirecting to /signin from ${pathname}`);
+//       return NextResponse.redirect(new URL('/signin', request.url));
 //     }
 
 //     // Ensure role is valid, default to 'applicant' if undefined
@@ -54,7 +54,7 @@
 //   },
 //   {
 //     pages: {
-//       signIn: '/Signin',
+//       signIn: '/signin',
 //     //   error: '/error',
 //     },
 //   }
@@ -81,8 +81,8 @@ export default withAuth(
     console.log("Middleware triggered");
     
     if (!token) {
-      console.log(`Middleware: No token, redirecting to /Signin from ${pathname}`);
-      return NextResponse.redirect(new URL('/Signin', request.url));
+      console.log(`Middleware: No token, redirecting to /signin from ${pathname}`);
+      return NextResponse.redirect(new URL('/signin', request.url));
     }
 
     const role = token?.role || 'applicant';
@@ -117,7 +117,7 @@ export default withAuth(
   },
   {
     pages: {
-      signIn: '/Signin',
+      signIn: '/signin',
     },
   }
 );

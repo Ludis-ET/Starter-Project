@@ -14,7 +14,7 @@ const ITEMS_PER_PAGE = 6;
 export default async function CyclesPage({ searchParams }: Props) {
   const session = await getServerSession(options);
 
-  if (!session) redirect("/Signin");
+  if (!session) redirect("/signin");
   if (session.user?.role !== "admin") redirect("/");
 
   let cycles: any[] = [];
