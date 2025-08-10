@@ -1,13 +1,16 @@
+"use client";
 
 import Header from '@/app/components/Header'
 import SetNewPasswordForm from '@/app/components/SetNewPasswordFormData'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const ResetPassword = () => {
   return (
     <>
-        <Header />
+      <Header />
+      <Suspense fallback={<div>Loading...</div>}>
         <SetNewPasswordForm />
+      </Suspense>
     </>
   )
 }
