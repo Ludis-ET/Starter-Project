@@ -260,48 +260,49 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                 <option value="accepted">Accepted</option>
               </select>
             </div>
-
-            <table className="w-full text-sm text-left">
-              <thead className="text-gray-600 border-b">
-                <tr>
-                  <th className="px-1">APPLICANT</th>
-                  <th className="px-1">SUBMITTED</th>
-                  <th className="px-1">ASSIGNED REVIEWER</th>
-                  <th className="px-1">STATUS</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {applications
-                  .filter(
-                    (app) =>
-                      filterStatus === "All" ||
-                      filterStatus === "all" ||
-                      app.status === filterStatus
-                  )
-                  .map((app) => (
-                    <tr key={app.id} className="border-b hover:bg-gray-50">
-                      <td className="py-2 px-1">{app.applicant_name}</td>
-                      <td className="px-1">
-                        {new Date().toISOString().split("T")[0]}
-                      </td>
-                      <td className="px-1">
-                        {app.assigned_reviewer_name
-                          ? app.assigned_reviewer_name
-                          : "None"}
-                      </td>
-                      <td className="px-1">{app.status}</td>
-                      <td>
-                        <CustomDropdown
-                          reviewers={reviewers}
-                          app={app}
-                          refetchApplications={refetchApplications}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-gray-600 border-b">
+                  <tr>
+                    <th className="px-1">APPLICANT</th>
+                    <th className="px-1">SUBMITTED</th>
+                    <th className="px-1">ASSIGNED REVIEWER</th>
+                    <th className="px-1">STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications
+                    .filter(
+                      (app) =>
+                        filterStatus === "All" ||
+                        filterStatus === "all" ||
+                        app.status === filterStatus
+                    )
+                    .map((app) => (
+                      <tr key={app.id} className="border-b hover:bg-gray-50">
+                        <td className="py-2 px-1">{app.applicant_name}</td>
+                        <td className="px-1">
+                          {new Date().toISOString().split("T")[0]}
+                        </td>
+                        <td className="px-1">
+                          {app.assigned_reviewer_name
+                            ? app.assigned_reviewer_name
+                            : "None"}
+                        </td>
+                        <td className="px-1">{app.status}</td>
+                        <td>
+                          <CustomDropdown
+                            reviewers={reviewers}
+                            app={app}
+                            refetchApplications={refetchApplications}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="bg-white rounded-xl shadow-2xl p-6 h-fit">

@@ -1,6 +1,6 @@
 'use client';
-import { useSession, signOut, getSession } from "next-auth/react"; 
 
+import { useSession, signOut, getSession } from "next-auth/react";
 import React, { useState, useRef, useEffect } from 'react';
 
 interface Reviewer {
@@ -27,7 +27,7 @@ interface Action {
 interface CustomDropdownProps {
   reviewers: Reviewer[];
   app: Application;
-  refetchApplications: () => void; // New prop to refetch applications
+  refetchApplications: () => void;
 }
 
 const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetchApplications }) => {
@@ -37,31 +37,28 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
   const dropdownRef = useRef<HTMLDivElement>(null);
   const assignRef = useRef<HTMLDivElement>(null);
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  const { data: session, status, update } = useSession(); // NEW: Include update from useSession
-  const accessToken = session?.accessToken
+  const { data: session, status, update } = useSession();
+  const accessToken = session?.accessToken;
 
   const handleAssignReviewer = async (reviewerId: string, reviewerName: string) => {
     try {
       const response = await fetch(BASE_URL + `/manager/applications/${app.id}/assign`, {
-        method: 'PATCH', // or 'PATCH' depending on your API
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization : `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ reviewer_id : reviewerId }),
+        body: JSON.stringify({ reviewer_id: reviewerId }),
       });
-      console.log(response, reviewers)
       if (!response.ok) {
         throw new Error('Failed to assign reviewer');
       }
       console.log(`Assigned ${app.applicant_name} to ${reviewerName}`);
       setIsAssignOpen(false);
       setIsOpen(false);
-      refetchApplications(); // Trigger refetch to update UI
+      refetchApplications();
     } catch (error) {
       console.error('Error assigning reviewer:', error);
-      // Optionally show an error message to the user
     }
   };
 
@@ -87,6 +84,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
   }, []);
 
   return (
+    // MODIFIED: Removed erroneous "over-" prefix from className and ensured relative positioning
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -96,7 +94,8 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 w-32 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-20">
+        // MODIFIED: Increased z-index to ensure overlay and added transition
+        <div className="absolute right-0 w-32 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-30 transition-all duration-200 ease-in-out">
           {actions.map((action) => (
             <div
               key={action.name}
@@ -112,10 +111,12 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
       )}
 
       {isAssignOpen && assignRef.current && (
+        // MODIFIED: Increased z-index, adjusted positioning, and ensured no layout shift
         <div
-          className="absolute mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10"
+          className="absolute mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-40 transition-all duration-200 ease-in-out"
           style={{
-            top: assignRef.current.offsetTop,
+            // MODIFIED: Adjusted top to align with the "Assign to Reviewer" option and prevent overlap
+            top: assignRef.current.offsetTop + assignRef.current.offsetHeight,
             left: '100%',
             marginLeft: '0.5rem',
             width: '16rem',

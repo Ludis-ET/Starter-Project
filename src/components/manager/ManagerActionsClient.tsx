@@ -7,7 +7,7 @@ const BASE_URL = "https://a2sv-application-platform-backend-team5.onrender.com";
 
 interface Props {
   slug: string;
-  accessToken: string;
+  accessToken: string | undefined;
   initialStatus: string;
 }
 
