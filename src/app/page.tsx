@@ -1,23 +1,35 @@
-import Image from "next/image";
-import ApplicantForm from "./components/ApplicantsForm";
-import SignInForm from "./components/SignInForm";
-import Header from "./components/Header";
-import ForgotPasswordForm from "./components/ForgotPassword";
-import SetNewPasswordForm from "./components/SetNewPasswordFormData";
-import NotFoundPage from "@/components/NotFoundPage";
-import ApplicationForm from "./components/ApplicationFormData";
-import SuccessApplication from "./components/SuccessReset";
-export default function Home() {
+import BodyOne from "./components/mainPageComponents/BodyOne";
+import { getServerSession } from 'next-auth/next';
+import { redirect } from 'next/navigation';
+import { options } from '@/app/api/auth/[...nextauth]/options';
+
+export default async function Home() {
+  const session = await getServerSession(options);
+  
+    // Redirect unauthenticated users
+    if (!session) {
+      redirect('/Signin');
+    }
+  
+    // Define role-specific redirect URLs
+    const roleRedirects: { [key: string]: string } = {
+      admin: '/admin',
+      manager: '/manager',
+      reviewer: '/reviewer',
+      applicant: '/applicant',
+    };
+  
+    // Get the user's role, default to 'applicant'
+    const role = session.user?.role || 'applicant';
+    const redirectUrl = roleRedirects[role] || '/applicant';
+  
+    // Redirect unauthorized users
+    if (role !== 'admin') {
+      redirect(redirectUrl);
+    }
   return (
-    <>
-      <Header />
-      {/* <ApplicantForm /> */}
-      {/* <SignInForm /> */}
-      {/* <ForgotPasswordForm /> */}
-      {/* <SetNewPasswordForm /> */}
-      {/* <NotFoundPage /> */}
-      {/* <ApplicationForm /> */}
-      {/* <SuccessApplication /> */}
-    </>
+    <div className="min-h-screen">
+      <BodyOne />
+    </div>
   );
 }

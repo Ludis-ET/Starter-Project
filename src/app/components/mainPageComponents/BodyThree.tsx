@@ -2,7 +2,7 @@ import React from "react";
 
 const BodyThree = () => {
   return (
-    <div className="min-h-[60vh] flex flex-col md:flex-row items-center text-black bg-gray-100 px-6 md:px-20 py-10">
+    <div id="about" className="min-h-[60vh] flex flex-col md:flex-row items-center text-black bg-gray-100 px-6 md:px-20 py-10">
       <div className="flex flex-col w-full md:w-1/2 mb-8 md:mb-0">
         <div className="text-3xl md:text-4xl font-bold text-center md:text-left">
           Built by Engineers, for Engineers

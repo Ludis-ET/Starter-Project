@@ -3,7 +3,7 @@ import React from "react";
 
 const BodyTwo = () => {
   return (
-    <div className="min-h-[60vh] flex flex-col items-center bg-white text-black px-4 md:px-0">
+    <div id="journey" className="min-h-[60vh] flex flex-col items-center bg-white text-black px-4 md:px-0">
       <div className="pt-20 text-center">
         <div className="font-bold text-3xl">Your Journey to Silicon Valley</div>
         <div className="font-light text-[16px] pt-4 text-gray-500">

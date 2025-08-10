@@ -1,23 +1,23 @@
 import React from "react";
-import ApplyNow from "../buttonComponents/ApplyNow";
+import Link from "next/link";
 
 const BodyFive = () => {
   return (
-    <div
-      className="min-h-[40vh] flex flex-col items-center justify-center text-center px-4 py-10"
-      style={{ background: "rgb(67, 56, 202)" }}
-    >
-      <div className="w-full max-w-xl">
-        <div className="font-extrabold text-2xl sm:text-3xl text-white">
+    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 py-16 px-4">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
           Ready to change your life?
-        </div>
-        <div className="font-extralight text-sm sm:text-base pt-5 text-indigo-200">
-          The next application cycle is now open. Take the first step toward{" "}
-          <span className="font-medium">your dream career</span>.
-        </div>
-        <div className="pt-7">
-          <ApplyNow />
-        </div>
+        </h2>
+        <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
+          The next application cycle is now open. Take the first step toward 
+          <span className="font-semibold text-white"> your dream career</span>.
+        </p>
+        <Link 
+          href="/auth/signup"
+          className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
+        >
+          Apply Now
+        </Link>
       </div>
     </div>
   );
