@@ -1,4 +1,4 @@
-import BodyOne from "./components/mainPageComponents/BodyOne";
+import BodyOne from "../components/app/mainPageComponents/BodyOne";
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { options } from '@/app/api/auth/[...nextauth]/options';

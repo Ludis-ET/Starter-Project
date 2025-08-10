@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import LandingFooter from "./components/Footer/Landingfooter";
+import LandingFooter from "../components/app/Footer/Landingfooter";
 
 export default function NotFound() {
   return (

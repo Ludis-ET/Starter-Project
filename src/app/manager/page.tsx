@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import { redirect } from "next/navigation";
 import ManagerHeader from "@/components/manager/ManagerHeader";
-import LandingFooter from "../components/Footer/Landingfooter";
+import LandingFooter from "../../components/app/Footer/Landingfooter";
 
 export default async function Page() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;

@@ -1,5 +1,5 @@
-import Header from '@/app/components/Header'
-import SuccessReset from '@/app/components/SuccessReset'
+import Header from '@/components/app/Header'
+import SuccessReset from '@/components/app/SuccessReset'
 import React from 'react'
 
 const Succes = () => {

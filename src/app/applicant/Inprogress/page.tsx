@@ -1,6 +1,6 @@
 "use client";
 
-import ApplicantNav from "@/app/components/ApplicantNav";
+import ApplicantNav from "@/components/app/ApplicantNav";
 import React, { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa6";
 import { RiProgress1Fill } from "react-icons/ri";

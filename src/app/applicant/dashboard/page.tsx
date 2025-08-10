@@ -1,6 +1,6 @@
 "use client";
 
-import ApplicantNav from "@/app/components/ApplicantNav";
+import ApplicantNav from "@/components/app/ApplicantNav";
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

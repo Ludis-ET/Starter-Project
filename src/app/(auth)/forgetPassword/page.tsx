@@ -1,6 +1,6 @@
 import React from 'react'
-import Header from '@/app/components/Header'
-import ForgotPasswordForm from '@/app/components/ForgotPassword'
+import Header from '@/components/app/Header'
+import ForgotPasswordForm from '@/components/app/ForgotPassword'
 
 const ForgetPassword = () => {
   return (
