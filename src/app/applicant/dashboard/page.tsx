@@ -3,6 +3,7 @@
 import ApplicantNav from "@/app/components/ApplicantNav";
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
@@ -14,151 +15,239 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
-import { CheckCircle2, Clock, ExternalLink } from "lucide-react";
+import { 
+  CheckCircle2, 
+  Clock, 
+  ExternalLink, 
+  Calendar,
+  FileText,
+  User,
+  Award,
+  AlertCircle,
+  Zap,
+  Target,
+  TrendingUp,
+  BookOpen,
+  Coffee
+} from "lucide-react";
+import { 
+  profileApi, 
+  applicationsApi, 
+  getTokenFromSession, 
+  Profile, 
+  ApplicationStatus 
+} from "@/lib/api-client";
 
-async function getProfile(accessToken: string) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const res = await fetch(`${API_URL}/profile/me`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!res.ok) return null;
-  const result = await res.json();
-  return result.data;
-}
+// Timeline component for application progress
+const ApplicationTimeline = ({ status }: { status: string }) => {
+  const steps = [
+    { id: 'submitted', label: 'Application Submitted', icon: FileText },
+    { id: 'review', label: 'Under Review', icon: Clock },
+    { id: 'interview', label: 'Interview Stage', icon: User },
+    { id: 'decision', label: 'Final Decision', icon: Award },
+  ];
 
-async function getApplicationData(applicationId: string, accessToken: string) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const res = await fetch(`${API_URL}/applications/${applicationId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!res.ok) return null;
-  const result = await res.json();
-  return result.data;
-}
+  const getStepStatus = (stepId: string, currentStatus: string) => {
+    const statusMap: Record<string, number> = {
+      'submitted': 1,
+      'pending': 1,
+      'under_review': 2,
+      'interview': 3,
+      'approved': 4,
+      'rejected': 4,
+    };
 
-export default function Dashboard() {
+    const currentStep = statusMap[currentStatus.toLowerCase()] || 0;
+    const stepNumber = statusMap[stepId] || 0;
+
+    if (stepNumber < currentStep) return 'completed';
+    if (stepNumber === currentStep) return 'current';
+    return 'upcoming';
+  };
+
+  return (
+    <div className="space-y-4">
+      {steps.map((step, index) => {
+        const stepStatus = getStepStatus(step.id, status);
+        const Icon = step.icon;
+        
+        return (
+          <div key={step.id} className="flex items-center space-x-4">
+            <div className={`
+              w-10 h-10 rounded-full flex items-center justify-center border-2
+              ${stepStatus === 'completed' ? 'bg-green-500 border-green-500 text-white' : 
+                stepStatus === 'current' ? 'bg-indigo-500 border-indigo-500 text-white' : 
+                'bg-gray-100 border-gray-300 text-gray-400'}
+            `}>
+              {stepStatus === 'completed' ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <Icon className="w-5 h-5" />
+              )}
+            </div>
+            
+            <div className="flex-1">
+              <p className={`font-medium ${
+                stepStatus === 'completed' ? 'text-green-700' :
+                stepStatus === 'current' ? 'text-indigo-700' :
+                'text-gray-500'
+              }`}>
+                {step.label}
+              </p>
+              
+              {stepStatus === 'current' && (
+                <p className="text-sm text-gray-600">Currently in progress</p>
+              )}
+            </div>
+            
+            {index < steps.length - 1 && (
+              <div className={`w-px h-8 ml-5 ${
+                stepStatus === 'completed' ? 'bg-green-500' : 'bg-gray-300'
+              }`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Status badge component
+const StatusBadge = ({ status }: { status: string }) => {
+  const getStatusConfig = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'submitted':
+      case 'pending':
+        return { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: 'Under Review' };
+      case 'under_review':
+        return { color: 'bg-blue-100 text-blue-800', icon: FileText, text: 'In Review' };
+      case 'interview':
+        return { color: 'bg-purple-100 text-purple-800', icon: User, text: 'Interview Stage' };
+      case 'approved':
+        return { color: 'bg-green-100 text-green-800', icon: CheckCircle2, text: 'Approved' };
+      case 'rejected':
+        return { color: 'bg-red-100 text-red-800', icon: AlertCircle, text: 'Not Selected' };
+      default:
+        return { color: 'bg-gray-100 text-gray-800', icon: Clock, text: 'Pending' };
+    }
+  };
+
+  const config = getStatusConfig(status);
+  const Icon = config.icon;
+
+  return (
+    <Badge className={`${config.color} font-medium`}>
+      <Icon className="w-3 h-3 mr-1" />
+      {config.text}
+    </Badge>
+  );
+};
+
+export default function ApplicantDashboard() {
   const { data: session, status } = useSession();
-  const [profileData, setProfileData] = useState<any>(null);
-  const [applicationData, setApplicationData] = useState<any>(null);
+  const router = useRouter();
+  
+  const [profileData, setProfileData] = useState<Profile | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null);
   const [loadingProfile, setLoadingProfile] = useState<boolean>(true);
-  const [loadingApp, setLoadingApp] = useState<boolean>(true);
+  const [loadingApplication, setLoadingApplication] = useState<boolean>(true);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  // Fetch profile data
   useEffect(() => {
-    if (status === "loading") return;
-    if (status === "unauthenticated") {
-      setLoadingProfile(false);
-      setLoadingApp(false);
-      return;
-    }
-    const accessToken = (session as any)?.accessToken;
-    if (!accessToken) {
-      setLoadingProfile(false);
-      setLoadingApp(false);
-      return;
-    }
-    setLoadingProfile(true);
     const fetchProfile = async () => {
+      if (status !== "authenticated" || !session) return;
+      
       try {
-        const profile = await getProfile(accessToken);
-        setProfileData(profile);
-      } catch (err) {
-        setProfileData(null);
+        const token = getTokenFromSession(session);
+        if (!token) throw new Error("No access token");
+        
+        const response = await profileApi.getProfile(token);
+        setProfileData(response.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setMessage({ type: 'error', text: 'Failed to load profile data' });
       } finally {
         setLoadingProfile(false);
       }
     };
-    fetchProfile();
-  }, [session, status]);
 
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/signin");
+      return;
+    }
+    
+    fetchProfile();
+  }, [session, status, router]);
+
+  // Fetch application status
   useEffect(() => {
-    if (!profileData || !profileData.id) {
-      setLoadingApp(false);
-      return;
-    }
-    const accessToken = (session as any)?.accessToken;
-    if (!accessToken) {
-      setLoadingApp(false);
-      return;
-    }
-    setLoadingApp(true);
-    const fetchApp = async () => {
+    const fetchApplicationStatus = async () => {
+      if (status !== "authenticated" || !session) return;
+      
       try {
-        const appData = await getApplicationData(profileData.id, accessToken);
-        setApplicationData(appData);
-      } catch (err) {
-        setApplicationData(null);
+        const token = getTokenFromSession(session);
+        if (!token) throw new Error("No access token");
+        
+        const response = await applicationsApi.getMyStatus(token);
+        setApplicationStatus(response.data);
+      } catch (error) {
+        console.error("Error fetching application status:", error);
+        // This is expected if no application exists yet
       } finally {
-        setLoadingApp(false);
+        setLoadingApplication(false);
       }
     };
-    fetchApp();
-  }, [profileData, session]);
 
-  // Checklist logic
-  const profileChecklistItems = [
-    { completed: !!profileData?.full_name },
-    { completed: !!profileData?.email },
-    { completed: !!profileData?.profile_picture_url },
-  ];
-  const completedProfileItems = profileChecklistItems.filter(
-    (i) => i.completed
-  ).length;
-  const profileCompletionPercentage = profileChecklistItems.length
-    ? Math.round((completedProfileItems / profileChecklistItems.length) * 100)
-    : 0;
-  const isProfileComplete = profileCompletionPercentage === 100;
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/signin");
+      return;
+    }
+    
+    fetchApplicationStatus();
+  }, [session, status, router]);
 
-  const applicationChecklistItems = [
-    {
-      id: "account",
-      label: "Create an Account",
-      completed: !!profileData?.full_name && !!profileData?.email,
-      description: "Complete your basic account setup"
-    },
-    {
-      id: "personal",
-      label: "Fill Personal Information",
-      completed: !!applicationData?.school && !!applicationData?.degree,
-      description: "Add your educational background"
-    },
-    {
-      id: "profiles",
-      label: "Submit Coding Profiles",
-      completed:
-        !!applicationData?.leetcode_handle ||
-        !!applicationData?.codeforces_handle,
-      description: "Link your coding profiles"
-    },
-    {
-      id: "essays",
-      label: "Write Essays",
-      completed:
-        !!applicationData?.essay_why_a2sv && !!applicationData?.essay_about_you,
-      description: "Complete application essays"
-    },
-    {
-      id: "resume",
-      label: "Upload Resume",
-      completed: !!applicationData?.resume_url,
-      description: "Upload your professional resume"
-    },
-  ];
+  // Calculate profile completion
+  const getProfileCompletion = () => {
+    if (!profileData) return 0;
+    
+    const fields = [
+      profileData.full_name,
+      profileData.email,
+      profileData.profile_picture_url,
+    ];
+    
+    const completed = fields.filter(field => field && field.trim() !== '').length;
+    return Math.round((completed / fields.length) * 100);
+  };
 
-  const completedApplicationItems = applicationChecklistItems.filter(item => item.completed).length;
-  const applicationProgress = Math.round((completedApplicationItems / applicationChecklistItems.length) * 100);
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-  if (loadingProfile || loadingApp || status === "loading") {
+  if (loadingProfile || loadingApplication || status === "loading") {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="px-6 pt-16">
-          <div className="max-w-7xl mx-auto">
+        <ApplicantNav />
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-64" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(6)].map((_, i) => (
                 <Card key={i} className="p-6">
                   <div className="space-y-4">
                     <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
                     <Skeleton className="h-20 w-full" />
                     <div className="flex gap-2">
                       <Skeleton className="h-6 w-20 rounded-full" />
@@ -174,204 +263,287 @@ export default function Dashboard() {
     );
   }
 
+  const profileCompletion = getProfileCompletion();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ApplicantNav />
 
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome, {profileData?.full_name || "John"}!
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Your journey as a global tech career starts here.
-            </p>
-          </div>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Alert Messages */}
+        {message && (
+          <Alert className={`mb-6 ${message.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+            <AlertDescription className={message.type === 'success' ? 'text-green-800' : 'text-red-800'}>
+              {message.text}
+            </AlertDescription>
+          </Alert>
+        )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Application Card */}
-            <div className="lg:col-span-2">
-              <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 overflow-hidden">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl font-bold">
-                    G7 November Intake
-                  </CardTitle>
-                  <CardDescription className="text-indigo-100 text-base">
-                    It's time to submit your application and show us your potential.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {profileData?.full_name || "there"}! 👋
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Your journey to join A2SV continues here. Track your progress and next steps.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Application Status Card */}
+            {applicationStatus ? (
+              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
+                <CardHeader>
                   <div className="flex items-center justify-between">
-                    <Button 
-                      asChild
-                      className="bg-white text-indigo-600 hover:bg-gray-100 font-semibold px-8 py-3"
-                    >
-                      <Link href="/applicant/Apply">Start Application</Link>
-                    </Button>
-                    <div className="text-right">
-                      <div className="text-sm opacity-90">Application Progress</div>
-                      <div className="text-2xl font-bold">{applicationProgress}%</div>
+                    <div>
+                      <CardTitle className="text-xl text-indigo-900">Application Status</CardTitle>
+                      <CardDescription className="text-indigo-700">
+                        Submitted on {formatDate(applicationStatus.submitted_at)}
+                      </CardDescription>
+                    </div>
+                    <StatusBadge status={applicationStatus.status} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <Label className="text-indigo-700 font-medium">School</Label>
+                        <p className="text-indigo-900">{applicationStatus.school}</p>
+                      </div>
+                      <div>
+                        <Label className="text-indigo-700 font-medium">Degree</Label>
+                        <p className="text-indigo-900">{applicationStatus.degree}</p>
+                      </div>
+                      <div>
+                        <Label className="text-indigo-700 font-medium">Country</Label>
+                        <p className="text-indigo-900">{applicationStatus.country}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-4">
+                      <div className="text-sm text-indigo-700">
+                        Application ID: <span className="font-mono">{applicationStatus.id}</span>
+                      </div>
+                      <Button variant="outline" className="border-indigo-300 text-indigo-700">
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Details
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Application Checklist */}
-              <Card className="mt-6">
+            ) : (
+              <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Application Checklist
+                  <CardTitle className="text-2xl">Ready to Start Your Journey?</CardTitle>
+                  <CardDescription className="text-indigo-100">
+                    Join Africa's most exclusive tech program and fast-track your career.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-indigo-100 mb-4">
+                        The G7 November intake is now open for applications.
+                      </p>
+                      <Button asChild className="bg-white text-indigo-600 hover:bg-gray-100">
+                        <Link href="/applicant/Apply">
+                          <Zap className="w-4 h-4 mr-2" />
+                          Start Application
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="hidden md:block">
+                      <div className="text-right">
+                        <div className="text-3xl font-bold">G7</div>
+                        <div className="text-sm opacity-90">November Intake</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Application Timeline */}
+            {applicationStatus && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="h-5 w-5" />
+                    <span>Application Progress</span>
                   </CardTitle>
                   <CardDescription>
-                    Complete all steps to submit your application
+                    Track your application journey through our selection process
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {applicationChecklistItems.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className={`flex items-start space-x-4 p-4 rounded-lg border transition-colors ${
-                        item.completed 
-                          ? 'bg-green-50 border-green-200' 
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {item.completed ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{item.label}</div>
-                        <div className="text-sm text-gray-600">{item.description}</div>
-                      </div>
-                      <Badge 
-                        variant={item.completed ? "default" : "secondary"}
-                        className={
-                          item.completed 
-                            ? "bg-green-100 text-green-800 hover:bg-green-100" 
-                            : ""
-                        }
-                      >
-                        {item.completed ? "Complete" : "Pending"}
-                      </Badge>
-                    </div>
-                  ))}
+                <CardContent>
+                  <ApplicationTimeline status={applicationStatus.status} />
                 </CardContent>
               </Card>
-            </div>
+            )}
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Profile Completion */}
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold">
-                    Complete Your Profile
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Progress</span>
-                      <Badge
-                        variant={isProfileComplete ? "default" : "secondary"}
-                        className={
-                          isProfileComplete
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-indigo-100 text-indigo-700 hover:bg-indigo-100"
-                        }
-                      >
-                        {profileCompletionPercentage}% complete
-                      </Badge>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
                     </div>
-                    <Progress
-                      value={profileCompletionPercentage}
-                      className="h-2"
-                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Profile Complete</p>
+                      <p className="text-2xl font-bold text-gray-900">{profileCompletion}%</p>
+                    </div>
                   </div>
-                  <Link
-                    href="#"
-                    className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium group"
-                  >
-                    Go to profile 
-                    <ExternalLink className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
                 </CardContent>
               </Card>
 
-              {/* Helpful Resources */}
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold">
-                    Helpful Resources
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Link
-                    href="#"
-                    className="block p-3 rounded-lg hover:bg-indigo-50 transition-colors group"
-                  >
-                    <div className="text-sm font-medium text-indigo-600 group-hover:text-indigo-700">
-                      Tips for a Great Application
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <Calendar className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Learn how to make your application stand out
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Days Since Apply</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {applicationStatus 
+                          ? Math.floor((new Date().getTime() - new Date(applicationStatus.submitted_at).getTime()) / (1000 * 60 * 60 * 24))
+                          : 0
+                        }
+                      </p>
                     </div>
-                  </Link>
-                  <Link
-                    href="#"
-                    className="block p-3 rounded-lg hover:bg-indigo-50 transition-colors group"
-                  >
-                    <div className="text-sm font-medium text-indigo-600 group-hover:text-indigo-700">
-                      A2SV Problem Solving Guide
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Prepare for technical assessments
-                    </div>
-                  </Link>
-                  <Link
-                    href="#"
-                    className="block p-3 rounded-lg hover:bg-indigo-50 transition-colors group"
-                  >
-                    <div className="text-sm font-medium text-indigo-600 group-hover:text-indigo-700">
-                      Interview Preparation
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Get ready for your interviews
-                    </div>
-                  </Link>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Quick Actions */}
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold">
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button asChild className="w-full justify-start" variant="outline">
-                    <Link href="/applicant/Apply">
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Continue Application
-                    </Link>
-                  </Button>
-                  <Button asChild className="w-full justify-start" variant="outline">
-                    <Link href="#">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      View Application Status
-                    </Link>
-                  </Button>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-purple-100 p-2 rounded-full">
+                      <Award className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Status</p>
+                      <p className="text-lg font-bold text-gray-900 capitalize">
+                        {applicationStatus?.status.replace('_', ' ') || 'Not Started'}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Profile Completion */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Complete Your Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Progress</span>
+                    <Badge variant={profileCompletion === 100 ? "default" : "secondary"}>
+                      {profileCompletion}% complete
+                    </Badge>
+                  </div>
+                  <Progress value={profileCompletion} className="h-2" />
+                </div>
+                <Link href="/profile">
+                  <Button variant="outline" className="w-full">
+                    <User className="w-4 h-4 mr-2" />
+                    Update Profile
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Next Steps */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Next Steps</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!applicationStatus ? (
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="font-medium text-gray-900">Submit Your Application</p>
+                        <p className="text-sm text-gray-600">Complete and submit your A2SV application</p>
+                      </div>
+                    </div>
+                    <Link href="/applicant/Apply" className="block">
+                      <Button className="w-full">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Start Application
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="font-medium text-gray-900">Application Submitted</p>
+                        <p className="text-sm text-gray-600">We're reviewing your application</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                      <div>
+                        <p className="font-medium text-gray-900">Prepare for Interview</p>
+                        <p className="text-sm text-gray-600">Practice coding problems and review algorithms</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Helpful Resources */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Helpful Resources</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link href="#" className="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <BookOpen className="w-5 h-5 text-indigo-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Interview Guide</p>
+                      <p className="text-sm text-gray-600">Prepare for technical interviews</p>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="#" className="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <Coffee className="w-5 h-5 text-indigo-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Alumni Stories</p>
+                      <p className="text-sm text-gray-600">Success stories from graduates</p>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="#" className="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <ExternalLink className="w-5 h-5 text-indigo-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Problem Solving</p>
+                      <p className="text-sm text-gray-600">Practice coding challenges</p>
+                    </div>
+                  </div>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
