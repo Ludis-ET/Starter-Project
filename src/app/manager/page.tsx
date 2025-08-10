@@ -1,7 +1,9 @@
-import ManagerDashboard from "../../components/ManagerDashboard";
+import ManagerDashboard from "../../components/manager/ManagerDashboard";
 import { getServerSession } from "next-auth/next";
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import { redirect } from "next/navigation";
+import ManagerHeader from "@/components/manager/ManagerHeader";
+import LandingFooter from "../components/Footer/Landingfooter";
 
 export default async function Page() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -40,5 +42,11 @@ export default async function Page() {
 
   const applications = response.data?.applications ?? [];
 
-  return <ManagerDashboard applications={applications}/>;
+  return (
+    <>
+      <ManagerHeader userRole="manager" />
+      <ManagerDashboard applications={applications} />;
+      <LandingFooter />
+    </>
+  );
 }
