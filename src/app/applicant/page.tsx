@@ -39,6 +39,7 @@ import {
   Profile, 
   ApplicationStatus 
 } from "@/lib/api-client";
+import { Label } from "@/components/ui/label";
 
 // Timeline component for application progress
 const ApplicationTimeline = ({ status }: { status: string }) => {

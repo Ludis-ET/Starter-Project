@@ -1,13 +1,11 @@
 "use client";
 
 import Link from 'next/link';
-import LandingHeader from "./components/Headers/Landingheader";
 import LandingFooter from "./components/Footer/Landingfooter";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <LandingHeader />
       
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="text-center max-w-md mx-auto">
@@ -41,7 +39,6 @@ export default function NotFound() {
         </div>
       </main>
       
-      <LandingFooter />
     </div>
   );
 }
