@@ -2,7 +2,7 @@ export interface AppData {
   name: string;
   submitted: string;
   status: string;
-  id: number;
+  id: string;
 }
 
 export interface ReviewData {
@@ -13,4 +13,31 @@ export interface ReviewData {
   essay1: string;
   essay2: string;
   resume: string;
+}
+
+// Extended types for the new API
+declare module "next-auth" {
+  interface Session {
+    accessToken: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+    }
+  }
+
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken: string;
+    role: string;
+  }
 }

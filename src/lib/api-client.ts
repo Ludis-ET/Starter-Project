@@ -67,30 +67,65 @@ export interface Profile {
 
 export interface UpdateProfileData {
   full_name?: string;
-  profile_picture_url?: string;
+  email?: string;
+  profile_picture?: File | null;
 }
 
 export interface ChangePasswordData {
-  current_password: string;
+  old_password: string;
   new_password: string;
 }
 
 export const profileApi = {
   getProfile: (token: string): Promise<ApiResponse<Profile>> =>
     apiRequest('/profile/me', { method: 'GET' }, token),
+
+  updateProfile: (
+    data: UpdateProfileData,
+    token: string
+  ): Promise<ApiResponse<Profile>> => {
+    const formData = new FormData();
     
-  updateProfile: (data: UpdateProfileData, token: string): Promise<ApiResponse<Profile>> =>
-    apiRequest('/profile/me', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }, token),
-    
-  changePassword: (data: ChangePasswordData, token: string): Promise<ApiResponse<any>> =>
-    apiRequest('/profile/me/change-password', {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }, token),
+    // Append only fields that exist
+    if (data.full_name) formData.append("full_name", data.full_name);
+    if (data.email) formData.append("email", data.email);
+    if (data.profile_picture instanceof File) {
+      formData.append("profile_picture", data.profile_picture);
+    }
+
+    return fetch(`${BASE_URL}/profile/me`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`, // no Content-Type here for FormData
+      },
+      body: formData,
+    })
+      .then(async (res) => {
+        const responseData = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const errorMsg =
+            responseData?.message || `API Error: ${res.status}`;
+          throw new Error(errorMsg);
+        }
+        return responseData;
+      });
+  },
+
+  changePassword: (
+    data: ChangePasswordData,
+    token: string
+  ): Promise<ApiResponse<any>> =>
+    apiRequest(
+      '/profile/me/change-password',
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      },
+      token
+    ),
 };
+
+
 
 // Reviews API
 export interface ReviewItem {
@@ -117,19 +152,61 @@ export interface ApplicationReview {
 }
 
 export interface ReviewUpdateData {
-  score: number;
-  feedback: string;
-  status: 'approved' | 'rejected' | 'pending';
+  activity_check_notes?: string;
+  resume_score?: number;
+  essay_why_a2sv_score?: number;
+  essay_about_you_score?: number;
+  technical_interview_score?: number;
+  behavioral_interview_score?: number;
+  interview_notes?: string;
+}
+
+export interface ApplicantDetails {
+  id: string;
+  applicant_name: string;
+  status: string;
+  school: string;
+  student_id: string;
+  country: string;
+  degree: string;
+  leetcode_handle: string;
+  codeforces_handle: string;
+  essay_why_a2sv: string;
+  essay_about_you: string;
+  resume_url: string;
+  submitted_at: string;
+  updated_at: string;
+}
+
+export interface ReviewDetails {
+  id: string;
+  application_id: string;
+  reviewer_id: string;
+  activity_check_notes: string;
+  resume_score: number;
+  essay_why_a2sv_score: number;
+  essay_about_you_score: number;
+  technical_interview_score: number;
+  behavioral_interview_score: number;
+  interview_notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FullApplicationReview {
+  id: string;
+  applicant_details: ApplicantDetails;
+  review_details: ReviewDetails;
 }
 
 export const reviewsApi = {
   getAssignedReviews: (page = 1, limit = 10, token: string): Promise<PaginatedResponse<ReviewItem>> =>
     apiRequest(`/reviews/assigned/?page=${page}&limit=${limit}`, { method: 'GET' }, token),
-    
-  getReviewById: (applicationId: string, token: string): Promise<ApiResponse<ApplicationReview>> =>
+
+  getReviewById: (applicationId: string, token: string): Promise<ApiResponse<FullApplicationReview>> =>
     apiRequest(`/reviews/${applicationId}/`, { method: 'GET' }, token),
-    
-  updateReview: (applicationId: string, data: ReviewUpdateData, token: string): Promise<ApiResponse<any>> =>
+
+  updateReview: (applicationId: string, data: ReviewUpdateData, token: string): Promise<ApiResponse<ReviewDetails>> =>
     apiRequest(`/reviews/${applicationId}/`, {
       method: 'PUT',
       body: JSON.stringify(data),

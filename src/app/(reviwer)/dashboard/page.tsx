@@ -1,9 +1,12 @@
-import ReviewerDashboard from '@/components/ReviewerDashboard'
+import ImprovedReviewerDashboard from '@/components/ImprovedReviewerDashboard'
+import AuthenticatedLayout from '@/components/layouts/AuthenticatedLayout';
 import React from 'react'
 
 const page = () => {
   return (
-    <ReviewerDashboard />
+    <AuthenticatedLayout>
+      <ImprovedReviewerDashboard />
+    </AuthenticatedLayout>
   )
 }
 
