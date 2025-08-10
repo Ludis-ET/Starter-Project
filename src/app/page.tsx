@@ -6,10 +6,7 @@ import { options } from '@/app/api/auth/[...nextauth]/options';
 export default async function Home() {
   const session = await getServerSession(options);
   
-    // Redirect unauthenticated users
-    if (!session) {
-      redirect('/Signin');
-    }
+  
   
     // Define role-specific redirect URLs
     const roleRedirects: { [key: string]: string } = {
@@ -19,12 +16,13 @@ export default async function Home() {
       applicant: '/applicant',
     };
   
+      // Redirect unauthenticated users
+    if (session) {
+      
     // Get the user's role, default to 'applicant'
     const role = session.user?.role || 'applicant';
     const redirectUrl = roleRedirects[role] || '/applicant';
-  
-    // Redirect unauthorized users
-    if (role !== 'admin') {
+    
       redirect(redirectUrl);
     }
   return (
