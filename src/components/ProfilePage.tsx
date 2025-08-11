@@ -1,174 +1,242 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { profileApi, Profile, ChangePasswordData } from '@/lib/api-client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Alert } from '@/components/ui/alert';
-import { Camera } from 'lucide-react';
 
-const ProfilePage = () => {
+export default function ProfilePage() {
   const { data: session } = useSession();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [profileForm, setProfileForm] = useState({
+  const [profile, setProfile] = useState({
+    full_name: 'Loading...',
+    email: 'Loading...',
+    role: 'Loading...',
+    profile_picture_url: null,
+  });
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    profile_picture: null as File | null
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
-  const [passwordForm, setPasswordForm] = useState({
-    old_password: '',
-    new_password: '',
-    confirm_password: ''
-  });
-  const [previewImage, setPreviewImage] = useState<string>('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (session?.accessToken) {
-      fetchProfile();
-    }
+    const fetchProfile = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/me`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          });
+          const data = await response.json();
+          if (data.success) {
+            setProfile(data.data);
+            setFormData({
+              full_name: data.data.full_name,
+              email: data.data.email,
+              currentPassword: '',
+              newPassword: '',
+              confirmPassword: '',
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          setProfile({
+            full_name: 'Error loading name',
+            email: 'Error loading email',
+            role: 'Error loading role',
+            profile_picture_url: null,
+          });
+        }
+      }
+    };
+    fetchProfile();
   }, [session]);
 
-  const fetchProfile = async () => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateProfile = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     try {
-      const response = await profileApi.getProfile(session!.accessToken);
-      setProfile(response.data);
-      setProfileForm({
-        full_name: response.data.full_name,
-        email: response.data.email,
-        profile_picture: null
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/me`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({ full_name: formData.full_name, email: formData.email, profile_picture: null }), // Assuming no file upload for simplicity
       });
-      setPreviewImage(response.data.profile_picture_url || '');
-    } catch {
-      setError('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session?.accessToken) return;
-    setUpdating(true);
-    setError('');
-    setMessage('');
-    try {
-      const formData = new FormData();
-      formData.append('full_name', profileForm.full_name);
-      formData.append('email', profileForm.email);
-      if (profileForm.profile_picture) {
-        formData.append('profile_picture', profileForm.profile_picture);
+      const data = await response.json();
+      if (data.success) {
+        setProfile(data.data);
+        setEditMode(false);
+        setError('');
+      } else {
+        setError('Failed to update profile');
       }
-      await profileApi.updateProfile(formData, session.accessToken);
-      setMessage('Profile updated successfully');
-      setProfileForm(prev => ({ ...prev, profile_picture: null }));
-    } catch {
-      setError('Failed to update profile');
-    } finally {
-      setUpdating(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Error updating profile');
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!session?.accessToken) return;
-    if (passwordForm.new_password !== passwordForm.confirm_password) {
+    if (formData.newPassword !== formData.confirmPassword) {
       setError('New passwords do not match');
       return;
     }
-    setUpdating(true);
-    setError('');
-    setMessage('');
     try {
-      const changeData: ChangePasswordData = {
-        old_password: passwordForm.old_password,
-        new_password: passwordForm.new_password
-      };
-      await profileApi.changePassword(changeData, session.accessToken);
-      setMessage('Password changed successfully');
-      setPasswordForm({
-        old_password: '',
-        new_password: '',
-        confirm_password: ''
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/me/change-password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
       });
-    } catch {
-      setError('Failed to change password');
-    } finally {
-      setUpdating(false);
+      const data = await response.json();
+      if (data.success) {
+        setFormData((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+        setError('');
+      } else {
+        setError('Failed to change password');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setError('Error changing password');
     }
   };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfileForm(prev => ({ ...prev, profile_picture: file }));
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <Card className="p-0 overflow-hidden">
-        <div className="relative h-40 bg-gray-200">
-          <img src="/banner.jpg" alt="Banner" className="w-full h-full object-cover" />
-          <div className="absolute left-6 bottom-0 translate-y-1/2">
-            <div className="relative w-24 h-24 rounded-full border-4 border-white overflow-hidden">
-              {previewImage ? (
-                <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gray-300" />
-              )}
-              <label htmlFor="profile-picture" className="absolute bottom-0 right-0 bg-white text-gray-700 rounded-full p-1 cursor-pointer shadow">
-                <Camera className="w-4 h-4" />
-              </label>
-              <input id="profile-picture" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+    <div className="flex justify-center items-start min-h-screen bg-gray-100 p-4">
+      <div className="flex flex-col items-center gap-10 w-full max-w-[896px] h-auto">
+        <div className="flex flex-col items-center w-full max-w-[832px]">
+          <div className="w-full h-[192px] bg-gray-200 rounded-lg" style={{ backgroundImage: profile.profile_picture_url ? `url(${profile.profile_picture_url})` : 'url(.jpg)' }}></div>
+          <div className="flex items-end w-full max-w-[768px] h-[128px] mt-[-64px]">
+            <div className="w-[128px] h-[128px] bg-gray-200 rounded-full" style={{ backgroundImage: profile.profile_picture_url ? `url(${profile.profile_picture_url})` : 'url(.jpg)', boxShadow: '0 0 0 4px #FFFFFF' }}></div>
+            <div className="flex flex-col items-start p-6 w-full max-w-[640px] h-[104px]">
+              <div className="flex justify-end items-center p-6 w-full max-w-[620px] h-[80px]">
+                <div className="flex flex-col w-full max-w-[620px] h-[52px]">
+                  <div className="flex w-full max-w-[620px] h-[32px]">
+                    <h1 className="text-2xl font-bold text-gray-900">{profile.full_name}</h1>
+                  </div>
+                  <div className="flex w-full max-w-[620px] h-[20px]">
+                    <p className="text-sm text-gray-500">{profile.email}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="pt-16 px-6">
-          <h1 className="text-xl font-bold">{profile?.full_name}</h1>
-          <p className="text-gray-500">{profile?.email}</p>
+        <div className="w-full max-w-[832px] h-auto bg-white shadow-lg rounded-lg">
+          <div className="flex flex-col items-start p-6 gap-6 w-full h-auto">
+            <h3 className="text-lg font-medium text-gray-900">Personal Information</h3>
+            <div className="flex flex-col gap-6 w-full max-w-[784px] h-auto">
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">Full name</label>
+                <input
+                  type="text"
+                  name="full_name"
+                  value={formData.full_name}
+                  onChange={handleInputChange}
+                  // disabled={!editMode}
+                  className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg text-sm text-black"
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">Email address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled
+                  className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg text-sm text-black"
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">Role</label>
+                <div className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg">
+                  <div className="w-full max-w-[514.66px] h-[20px] text-sm text-black">{profile.role}</div>
+                </div>
+              </div>
+      
+                <div className="flex justify-end w-full max-w-[784px]">
+                  <button
+                    onClick={handleUpdateProfile}
+                    className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+            </div>
+            <div className="flex justify-between w-full max-w-[784px]">
+              <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
+              <button
+                onClick={() => setEditMode(true)}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700"
+              >
+                Change Password
+              </button>
+            </div>
+            <div className="flex flex-col gap-6 w-full max-w-[784px] h-auto">
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={formData.currentPassword}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg text-sm text-black"
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg text-sm text-black"
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-full max-w-[514.66px] h-auto">
+                <label className="text-base font-medium text-gray-700">Confirm New Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className="w-full max-w-[514.66px] h-[20px] bg-white shadow-sm rounded-lg text-sm text-black"
+                />
+              </div>
+            </div>
+            {editMode && (
+              <div className="flex justify-end w-full max-w-[784px] bg-gray-100 p-3">
+                <button
+                  onClick={handleChangePassword}
+                  className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            )}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
         </div>
-        <div className="p-6 space-y-6">
-          {message && <Alert className="bg-green-50 text-green-800 border-green-200">{message}</Alert>}
-          {error && <Alert className="bg-red-50 text-red-800 border-red-200">{error}</Alert>}
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
-            <Input value={profileForm.full_name} onChange={(e) => setProfileForm(prev => ({ ...prev, full_name: e.target.value }))} placeholder="Full Name" />
-            <Input type="email" value={profileForm.email} onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))} placeholder="Email Address" />
-            <Input value={profile?.role || ''} disabled className="bg-gray-50" />
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={updating}>
-              {updating ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </form>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <Input type="password" value={passwordForm.old_password} onChange={(e) => setPasswordForm(prev => ({ ...prev, old_password: e.target.value }))} placeholder="Current Password" />
-            <Input type="password" value={passwordForm.new_password} onChange={(e) => setPasswordForm(prev => ({ ...prev, new_password: e.target.value }))} placeholder="New Password" />
-            <Input type="password" value={passwordForm.confirm_password} onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm_password: e.target.value }))} placeholder="Confirm New Password" />
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={updating}>
-              {updating ? 'Saving...' : 'Change Password'}
-            </Button>
-          </form>
-        </div>
-      </Card>
+      </div>
     </div>
   );
-};
-
-export default ProfilePage;
+}

@@ -13,7 +13,7 @@ const BodyFive = () => {
           <span className="font-semibold text-white"> your dream career</span>.
         </p>
         <Link
-          href="/signup"
+          href="/register"
           className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
         >
           Apply Now

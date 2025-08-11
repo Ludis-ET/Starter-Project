@@ -5,7 +5,7 @@ import BodyThree from "./BodyThree";
 import BodyFour from "./BodyFour";
 import BodyFive from "./BodyFive";
 import Landingfooter from "../Footer/Landingfooter";
-// import bodyone from '../../app/auth/signup'
+// import bodyone from '../../app/auth/register'
 import Link from "next/link";
 import heroimage from "../../../../public/Images/image1.png";
 import LandingHeader from "../Headers/Landingheader";
@@ -37,7 +37,7 @@ const BodyOne = () => {
           </p>
           <div className="mt-8">
             {/* <Link href = '/adminFunctionality/createNewUser'><StartApplication/></Link> */}
-            <Link href="/signup">
+            <Link href="/register">
               <StartApplication />
             </Link>
           </div>

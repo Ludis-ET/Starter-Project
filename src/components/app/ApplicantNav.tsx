@@ -135,8 +135,6 @@ const ApplicantNav = () => {
             Your Profile
           </Link>
 
-          <div className="text-gray-700 text-xl">Applicant Name</div>
-
           <Link
             onClick={handleLogout}
             className="text-gray-500 hover:text-red-500 transition-colors text-xl"
