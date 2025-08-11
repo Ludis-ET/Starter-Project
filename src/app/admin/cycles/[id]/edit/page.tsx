@@ -10,7 +10,10 @@ interface EditCyclePageProps {
   params: { id: string };
 }
 
-export default async function EditCyclePage({ params }: EditCyclePageProps) {
+export default async function EditCyclePage(context: {
+  params: { id: string };
+}) {
+  const { params } = context;
   const session = await getServerSession(options);
 
   if (!session) redirect("/signin");

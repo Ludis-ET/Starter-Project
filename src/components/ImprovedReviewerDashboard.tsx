@@ -24,7 +24,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl  py-6 shadow-sm",
         className
       )}
       {...props}
@@ -377,7 +377,7 @@ const ImprovedReviewerDashboard = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg border">
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg">
           <div className="text-sm text-gray-600">
             Page <span className="font-semibold">{currentPage}</span> of{" "}
             <span className="font-semibold">{totalPages}</span>

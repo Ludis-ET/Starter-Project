@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://a2sv-application-platform-backend-team5.onrender.com';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://a2sv-application-platform-backend-team5.onrender.com';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(options);
-    
+
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -22,7 +24,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${session.accessToken}`,
       },
       body: JSON.stringify(cycleData),
     });
@@ -30,12 +32,18 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.message || 'Failed to create cycle' }, { status: response.status });
+      return NextResponse.json(
+        { error: data.message || 'Failed to create cycle' },
+        { status: response.status }
+      );
     }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error('Create cycle error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

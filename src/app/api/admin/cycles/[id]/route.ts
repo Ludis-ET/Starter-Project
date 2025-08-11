@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://a2sv-application-platform-backend-team5.onrender.com';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://a2sv-application-platform-backend-team5.onrender.com';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// ✅ PUT: Update a cycle
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(options);
-    
+
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -22,7 +28,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${session.accessToken}`,
       },
       body: JSON.stringify(cycleData),
     });
@@ -30,20 +36,30 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.message || 'Failed to update cycle' }, { status: response.status });
+      return NextResponse.json(
+        { error: data.message || 'Failed to update cycle' },
+        { status: response.status }
+      );
     }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error('Update cycle error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// ✅ DELETE: Delete a cycle
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(options);
-    
+
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -56,19 +72,30 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.accessToken}`,
+        Authorization: `Bearer ${session.accessToken}`,
       },
     });
 
-    const data = await response.json();
+    // Only parse JSON if there's content
+    const isJson = response.headers
+      .get('content-type')
+      ?.includes('application/json');
+
+    const data = isJson ? await response.json() : {};
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.message || 'Failed to delete cycle' }, { status: response.status });
+      return NextResponse.json(
+        { error: data.message || 'Failed to delete cycle' },
+        { status: response.status }
+      );
     }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error('Delete cycle error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
