@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const LandingHeader = () => {
@@ -5,13 +6,16 @@ const LandingHeader = () => {
     <header className="bg-white shadow-sm py-4 px-6 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo Section */}
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-indigo-600">A2SV</span>
-            </div>
-          </Link>
-        </div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/assets/Logo.png"
+            alt="A2SV Logo"
+            width={110}
+            height={36}
+            className="h-9 w-auto"
+            priority
+          />
+        </Link>
 
         {/* Navigation Links */}
         <nav className="hidden md:flex items-center space-x-8">

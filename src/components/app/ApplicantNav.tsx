@@ -59,18 +59,15 @@ const ApplicantNav = () => {
 
           {/* Right - Profile Links */}
           <div className="absolute right-6 flex items-center space-x-6 text-sm">
-            <Link
-              href="/profile"
-              className={linkClass("/profile")}
-            >
+            <Link href="/profile" className={linkClass("/profile")}>
               Your Profile
             </Link>
-            <Link
-              href="#"
+            <button
+              onClick={handleLogout}
               className="text-gray-500 hover:text-red-500 transition-colors"
             >
               Logout
-            </Link>
+            </button>
           </div>
         </div>
       </div>
