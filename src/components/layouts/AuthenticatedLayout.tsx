@@ -24,11 +24,6 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
     const role = session?.user?.role || "";
     const baseLinks = [
       {
-        name: "Dashboard",
-        href: "/dashboard",
-        roles: ["admin", "reviewer", "applicant"],
-      },
-      {
         name: "Profile",
         href: "/profile",
         roles: ["admin", "reviewer", "applicant"],
@@ -67,7 +62,7 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-around items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
               {/* <Link href="/" className="flex items-center space-x-2"> */}
