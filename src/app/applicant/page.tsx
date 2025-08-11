@@ -393,12 +393,12 @@ export default function ApplicantDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between pt-4">
-                      <div className="text-sm text-indigo-700">
+                      {/* <div className="text-sm text-indigo-700">
                         Application ID:{" "}
                         <span className="font-mono">
                           {applicationStatus.id}
                         </span>
-                      </div>
+                      </div> */}
                       <Link href="/applicant/Inprogress">
                         <Button
                           variant="outline"
