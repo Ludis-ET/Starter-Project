@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+// Assuming your hook is in a 'hooks' directory
+import { useFetchWithAuth } from "@/utils/fetchWithAuth";
 
 // A simple camera icon component for the upload button
 const CameraIcon = () => (
@@ -29,12 +31,15 @@ const CameraIcon = () => (
 
 export default function ProfilePage() {
   const { data: session } = useSession();
+  // Get the authorized fetch function from your custom hook
+  const fetchWithAuth = useFetchWithAuth();
 
   // --- STATE MANAGEMENT ---
   const [profile, setProfile] = useState({
     full_name: "Loading...",
     email: "Loading...",
     role: "Loading...",
+    profile_picture_url: null,
   });
   const [formData, setFormData] = useState({
     full_name: "",
@@ -53,21 +58,19 @@ export default function ProfilePage() {
 
   // --- API AND DATA HANDLING ---
 
-  // useCallback ensures this function isn't recreated on every render
+  // Fetches profile data using the authorized fetch function
   const fetchProfile = useCallback(async () => {
-    if (!session?.accessToken) return;
+    // The hook will handle the unauthenticated state, but we can return early
+    if (!session) return;
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/profile/me`,
-        {
-          headers: { Authorization: `Bearer ${session.accessToken}` },
-        }
+      // Use fetchWithAuth, no headers needed for a simple GET request
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/profile/me`
       );
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Update all states from the single source of truth (API)
         setProfile(data.data);
         setFormData((prev) => ({
           ...prev,
@@ -80,14 +83,17 @@ export default function ProfilePage() {
       }
     } catch (err) {
       console.error("Fetch Profile Error:", err);
+      // The hook will redirect on auth errors, but we catch other network issues
       setError("An error occurred while fetching your profile.");
     }
-  }, [session]);
+  }, [session, fetchWithAuth]); // Added fetchWithAuth to dependency array
 
-  // Fetch profile on initial load and when session changes
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (session) {
+      // Only fetch if the session exists
+      fetchProfile();
+    }
+  }, [session, fetchProfile]);
 
   // --- EVENT HANDLERS ---
 
@@ -96,11 +102,10 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: any) => {
+  const handleFileChange = (e: any ) => {
     const file = e.target.files?.[0] || null;
     if (file) {
       setProfilePictureFile(file);
-      // Create a temporary URL for instant preview
       setImagePreview(URL.createObjectURL(file));
     }
   };
@@ -111,7 +116,6 @@ export default function ProfilePage() {
     setSuccess("");
 
     const body = new FormData();
-    // **FIX:** Appending all fields as per the API documentation, including email.
     body.append("full_name", formData.full_name);
     body.append("email", formData.email);
     if (profilePictureFile) {
@@ -119,11 +123,12 @@ export default function ProfilePage() {
     }
 
     try {
-      const response = await fetch(
+      // Use fetchWithAuth. We only specify the method and body.
+      // The hook handles Authorization, and the browser handles Content-Type for FormData.
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/profile/me`,
         {
           method: "PUT",
-          headers: { Authorization: `Bearer ${session.accessToken}` },
           body: body,
         }
       );
@@ -132,14 +137,12 @@ export default function ProfilePage() {
 
       if (response.ok && data.success) {
         setSuccess("Profile updated successfully!");
-        setProfilePictureFile(null); // Reset the file input state
-        // **ROBUST FIX:** Re-fetch the profile to ensure UI is perfectly in sync with the server.
-        await fetchProfile();
+        setProfilePictureFile(null);
+        await fetchProfile(); // Re-fetch to ensure UI is in sync
       } else {
         const errorMsg =
           data.detail?.[0]?.msg || data.message || "Failed to update profile.";
         setError(errorMsg);
-        // If the update failed, revert the image preview to the last known good URL
         setImagePreview(profile.profile_picture_url);
       }
     } catch (err) {
@@ -148,7 +151,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleChangePassword = async (e: any) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -161,13 +164,13 @@ export default function ProfilePage() {
     }
 
     try {
-      const response = await fetch(
+      // Use fetchWithAuth, providing only the non-auth headers
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/profile/me/change-password`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
           },
           body: JSON.stringify({
             old_password: formData.currentPassword,
@@ -205,6 +208,7 @@ export default function ProfilePage() {
   };
 
   // --- RENDER ---
+  // The JSX remains the same as the previous version.
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 p-4">
       <div className="flex flex-col items-center gap-10 w-full max-w-[896px]">

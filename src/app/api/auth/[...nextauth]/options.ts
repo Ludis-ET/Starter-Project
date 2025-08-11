@@ -52,7 +52,7 @@ export const options: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 1 day
+    maxAge: 24 * 60 * 60 * 60, // 1 day
   },
   callbacks: {
     async jwt({ token, user, trigger }) {
@@ -66,7 +66,7 @@ export const options: NextAuthOptions = {
         token.role = user.role;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
-        token.exp = Math.floor(Date.now() / 1000) + 900; // 15 minutes
+        token.exp = Math.floor(Date.now() / 1000) + 60000; // 15 minutes
       }
 
       if (trigger === 'update' || (token.exp && Date.now() > token.exp * 1000)) {
