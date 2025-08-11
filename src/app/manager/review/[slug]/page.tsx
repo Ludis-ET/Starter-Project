@@ -32,8 +32,7 @@ const Page = async ({ params }: Props) => {
 
 
   return (
-    <>
-    <div className=""></div>
+    <div className="bg-gray-100">
       <ManagerHeaderForDetails userRole="manager" />
       <div className="p-4 sm:p-6 md:p-10">
         
@@ -101,8 +100,7 @@ const Page = async ({ params }: Props) => {
         </div>
       </div>
       <LandingFooter />
-
-    </>
+</div>
   );
 };
 
