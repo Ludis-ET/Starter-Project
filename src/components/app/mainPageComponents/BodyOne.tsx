@@ -7,6 +7,7 @@ import BodyFive from "./BodyFive";
 import Landingfooter from "../Footer/Landingfooter";
 // import bodyone from '../../app/auth/signup'
 import Link from "next/link";
+import heroimage from "../../../../public/Images/image1.png";
 import LandingHeader from "../Headers/Landingheader";
 
 const BodyOne = () => {
@@ -18,8 +19,7 @@ const BodyOne = () => {
       <div
         className="relative h-[70vh] flex items-center justify-center px-4 md:px-20 text-white"
         style={{
-          backgroundImage:
-            "url(https://media.licdn.com/dms/image/v2/D5612AQFhrt7YPQfXNQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1690152312090?e=2147483647&v=beta&t=JQ1VHQl0A_A5Blkhbj0fmndJjuH-61SZoOVI3Ei4UUk)",
+          backgroundImage: `url(${heroimage.src})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -37,7 +37,7 @@ const BodyOne = () => {
           </p>
           <div className="mt-8">
             {/* <Link href = '/adminFunctionality/createNewUser'><StartApplication/></Link> */}
-            <Link href="/auth/signup">
+            <Link href="/signup">
               <StartApplication />
             </Link>
           </div>

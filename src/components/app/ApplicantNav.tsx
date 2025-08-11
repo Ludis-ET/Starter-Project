@@ -4,18 +4,22 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { IoMenuSharp } from "react-icons/io5";
+import { signOut } from "next-auth/react";
 
 const ApplicantNav = () => {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
   const linkClass = (path: string) =>
     pathname === path
       ? "text-gray-900 font-medium border-b-2 border-[#6366F1]"
       : "text-gray-500 hover:text-gray-700";
-   
 
-      // New class function for mobile links to add an underline
+  // New class function for mobile links to add an underline
   const mobileLinkClass = (path: string) => {
     const baseStyle = "text-xl transition-colors";
     if (pathname === path) {
@@ -25,7 +29,6 @@ const ApplicantNav = () => {
     // Style for inactive mobile links
     return `${baseStyle} text-gray-500 hover:text-gray-900`;
   };
-
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
@@ -108,7 +111,7 @@ const ApplicantNav = () => {
               priority
             />
           </Link>
-            {/* Close button in top-right */}
+          {/* Close button in top-right */}
           <button
             onClick={() => setMenuOpen(false)}
             className="absolute top-6 right-6 text-3xl text-gray-700"
@@ -124,9 +127,9 @@ const ApplicantNav = () => {
           >
             Dashboard
           </Link>
-            <Link
+          <Link
             href="/applicant/profile"
-            className={mobileLinkClass("/applicant/profile")}
+            className={mobileLinkClass("/profile")}
             onClick={() => setMenuOpen(false)}
           >
             Your Profile
@@ -135,9 +138,8 @@ const ApplicantNav = () => {
           <div className="text-gray-700 text-xl">Applicant Name</div>
 
           <Link
-            href="#"
+            onClick={handleLogout}
             className="text-gray-500 hover:text-red-500 transition-colors text-xl"
-            onClick={() => setMenuOpen(false)}
           >
             Logout
           </Link>

@@ -9,11 +9,11 @@ const BodyFive = () => {
           Ready to change your life?
         </h2>
         <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
-          The next application cycle is now open. Take the first step toward 
+          The next application cycle is now open. Take the first step toward
           <span className="font-semibold text-white"> your dream career</span>.
         </p>
-        <Link 
-          href="/auth/signup"
+        <Link
+          href="/signup"
           className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg"
         >
           Apply Now
