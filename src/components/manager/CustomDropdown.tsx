@@ -2,6 +2,7 @@
 
 import { useSession, signOut, getSession } from "next-auth/react";
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from "next/navigation";
 
 interface Reviewer {
   id: string;
@@ -39,6 +40,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   const { data: session, status, update } = useSession();
   const accessToken = session?.accessToken;
+  const router = useRouter();
 
   const handleAssignReviewer = async (reviewerId: string, reviewerName: string) => {
     try {
@@ -63,7 +65,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ reviewers, app, refetch
   };
 
   const actions: Action[] = [
-    { name: 'Review', onClick: () => console.log(`Review clicked for ${app.applicant_name}`) },
+    { name: 'Review', onClick: () => router.push(`/reviewer/dashboard`)},
     { name: 'View Details', onClick: () => { window.location.href = `/manager/${app.id}`; } },
     { name: 'Assign to Reviewer', onClick: () => setIsAssignOpen(!isAssignOpen), ref: assignRef },
   ];
