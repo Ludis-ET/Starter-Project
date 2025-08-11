@@ -248,7 +248,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="border border-gray-300 rounded-md p-2 text-sm"
+                className="border border-gray-200 rounded-md p-2 text-sm"
               >
                 <option value="All" hidden>
                   Filter by Status
@@ -260,9 +260,10 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                 <option value="accepted">Accepted</option>
               </select>
             </div>
+            <div className="relative">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-gray-600 border-b">
+                <thead className="text-gray-500 border-gray-100">
                   <tr>
                     <th className="px-1">APPLICANT</th>
                     <th className="px-1">SUBMITTED</th>
@@ -280,7 +281,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                         app.status === filterStatus
                     )
                     .map((app) => (
-                      <tr key={app.id} className="border-b hover:bg-gray-50">
+                      <tr key={app.id} className="hover:bg-gray-100">
                         <td className="py-2 px-1">{app.applicant_name}</td>
                         <td className="px-1">
                           {new Date().toISOString().split("T")[0]}
@@ -302,6 +303,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                     ))}
                 </tbody>
               </table>
+            </div>
             </div>
           </div>
 
@@ -334,7 +336,7 @@ const StatCard: React.FC<{ title: string; value: number }> = ({
   title,
   value,
 }) => (
-  <div className="bg-white rounded-xl shadow-2xl p-6">
+  <div className="rounded-xl shadow-1.5xl p-6 bg-gray-200 transition-transform duration-300 ease-in-out hover:-translate-y-2">
     <p className="text-sm text-gray-500">{title}</p>
     <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>
   </div>

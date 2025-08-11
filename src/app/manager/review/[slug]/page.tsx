@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import ManagerActions from "@/components/manager/ManagerActionsClient";
 import { getServerSession } from "next-auth/next";
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import BackBtn from "@/components/manager/BackBtn";
 import ManagerHeaderForDetails from "@/components/manager/ManagerHeaderForDetails";
 import AllrightsReservedFooter from "@/components/manager/AllrightsReservedFooter";
+import LandingFooter from "../../../../components/app/Footer/Landingfooter";
 
 interface Props {
   params: {
@@ -29,30 +29,24 @@ const Page = async ({ params }: Props) => {
 
   const data = await res.json();
   const details = data.data.application;
-  const review = data.data.review;
-  const scores: string[] = [];
 
-  if (review) {
-    scores.push(review.resume_score);
-    scores.push(review.essay_about_you_score);
-    scores.push(review.essay_why_a2sv_score);
-    scores.push(review.behavioral_interview_score);
-    console.log(data.data);
-  }
+
   return (
     <>
+    <div className=""></div>
       <ManagerHeaderForDetails userRole="manager" />
       <div className="p-4 sm:p-6 md:p-10">
-        <div className="items-center gap-4 w-full md:w-[1250px] mx-auto mb-6 md:mb-10">
+        
+        <div className="flex flex-col lg:flex-row justify-center gap-6 lg:gap-10">
+          {/* Left Side: Profile + Review */}
+          
+          <div className="grid grid-cols-1 gap-6">
+            <div className="items-center gap-4 w-full md:w-[1250px] mx-auto mb-6 md:mb-10">
           <BackBtn />
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold">
+          <h1 className="pl-5 text-xl sm:text-2xl md:text-3xl font-extrabold">
             Manage: {details.applicant_name}
           </h1>
         </div>
-
-        <div className="flex flex-col lg:flex-row justify-center gap-6 lg:gap-10">
-          {/* Left Side: Profile + Review */}
-          <div className="grid grid-cols-1 gap-6">
             {/* Applicant Profile */}
             <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-[900px]">
               <h2 className="text-xl font-semibold mb-4">Applicant Profile</h2>
@@ -103,60 +97,11 @@ const Page = async ({ params }: Props) => {
                 </div>
               </div>
             </div>
-
-            {/* Reviewer Feedback */}
-            <div className="bg-white rounded-xl shadow-2xl p-6 lg:w-[900px]">
-              {review ? (
-                <h2 className="text-xl font-semibold mb-4">
-                  Reviewer's Feedback.
-                </h2>
-              ) : (
-                <h2 className="text-xl font-semibold mb-4">
-                  No yet reviewed ...
-                </h2>
-              )}
-
-              {review && (
-                <>
-                  <div className="mb-4">
-                    <div className="text-sm text-gray-500">Activity Check</div>
-                    <p>{review.activity_check_notes}</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {[
-                      "Resume Score",
-                      "Essay Score",
-                      "Tech Interview",
-                      "Behavioral",
-                    ].map((title, i) => (
-                      <div key={i}>
-                        <div className="text-sm text-gray-500">{title}</div>
-                        <p>{scores[i]}/100</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <div className="text-sm text-gray-500">
-                      Interviewer Notes
-                    </div>
-                    <p>{review.interview_notes}</p>
-                  </div>
-                </>
-              )}
-            </div>
           </div>
-
-          {/* Manager Actions Section (Client-side buttons) */}
-          <ManagerActions
-            slug={slug}
-            accessToken={accessToken}
-            initialStatus={details.status}
-          />
         </div>
       </div>
-      <AllrightsReservedFooter />
+      <LandingFooter />
+
     </>
   );
 };

@@ -60,7 +60,7 @@ const ManagerActions = ({ slug, accessToken, initialStatus }: Props) => {
   };
 
   return (
-    <div className="w-[300px] bg-white border rounded-xl shadow p-6 space-y-4 h-fit">
+    <div className="w-[300px] bg-white rounded-xl shadow-2xl p-6 space-y-4 h-fit">
       <h2 className="text-xl font-semibold">Manager Action</h2>
 
       {/* Reviewer Assignment */}
