@@ -45,7 +45,9 @@ export default async function Page() {
   return (
     <>
       <ManagerHeader userRole="manager" />
-      <ManagerDashboard applications={applications} />;
+      <div className="bg-gray-100">
+        <ManagerDashboard applications={applications} />;
+      </div>
       <LandingFooter />
     </>
   );

@@ -40,7 +40,7 @@ const Page = async ({ params }: Props) => {
     console.log(data.data);
   }
   return (
-    <>
+    <div className="bg-gray-100">
       <ManagerHeaderForDetails userRole="manager" />
       <div className="p-4 sm:p-6 md:p-10">
         <div className="items-center gap-4 w-full md:w-[1250px] mx-auto mb-6 md:mb-10">
@@ -157,7 +157,7 @@ const Page = async ({ params }: Props) => {
         </div>
       </div>
       <AllrightsReservedFooter />
-    </>
+      </div>
   );
 };
 
