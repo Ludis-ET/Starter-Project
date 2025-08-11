@@ -7,9 +7,6 @@ declare module "next-auth" {
   }
 }
 import { options } from "@/app/api/auth/[...nextauth]/options";
-import { useFetchWithAuth } from "@/utils/fetchWithAuth";
-
-const fetchWithAuth = useFetchWithAuth();
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -115,7 +112,7 @@ export async function fetchAnalytics(): Promise<AnalyticsResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/analytics/`, {
+  const response = await fetch(`${BASE_URL}/admin/analytics/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -138,7 +135,7 @@ export async function fetchUsers(): Promise<UsersListResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/users/?page=1&limit=100`, {
+  const response = await fetch(`${BASE_URL}/admin/users/?page=1&limit=100`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -161,7 +158,7 @@ export async function fetchUserById(userId: string): Promise<UserResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/users/${userId}/`, {
+  const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -187,7 +184,7 @@ export async function updateUser(
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/users/${userId}/`, {
+  const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -210,7 +207,7 @@ export async function deleteUser(userId: string): Promise<UserResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/users/${userId}/`, {
+  const response = await fetch(`${BASE_URL}/admin/users/${userId}/`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -226,7 +223,7 @@ export async function deleteUser(userId: string): Promise<UserResponse> {
 }
 
 export async function fetchCycles(): Promise<CyclesListResponse> {
-  const response = await fetchWithAuth(`${BASE_URL}/cycles/`, {
+  const response = await fetch(`${BASE_URL}/cycles/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -250,7 +247,7 @@ export async function createCycle(
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/cycles/`, {
+  const response = await fetch(`${BASE_URL}/admin/cycles/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -276,7 +273,7 @@ export async function updateCycle(
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/cycles/${cycleId}/`, {
+  const response = await fetch(`${BASE_URL}/admin/cycles/${cycleId}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -299,7 +296,7 @@ export async function activateCycle(cycleId: number): Promise<CycleResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(
+  const response = await fetch(
     `${BASE_URL}/admin/cycles/${cycleId}/activate/`,
     {
       method: "PATCH",
@@ -324,7 +321,7 @@ export async function deleteCycle(cycleId: number): Promise<CycleResponse> {
     throw new Error("No authentication token available");
   }
 
-  const response = await fetchWithAuth(`${BASE_URL}/admin/cycles/${cycleId}/`, {
+  const response = await fetch(`${BASE_URL}/admin/cycles/${cycleId}/`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
