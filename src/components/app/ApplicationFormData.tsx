@@ -743,6 +743,12 @@ const ApplicationForm = () => {
                   placeholder="https://codeforces.com/profile/username"
                   {...register("codeforces_handle", {
                     required: "Codeforce link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?codeforces\.com\/profile\/[a-zA-Z0-9_-]+$/,
+                      message:
+                        "Must be a valid Codeforces profile URL (e.g., https://codeforces.com/profile/username)",
+                    },
                   })}
                 />
                 {errors.codeforces_handle && (
@@ -769,6 +775,12 @@ const ApplicationForm = () => {
                   placeholder="https://leetcode.com/username"
                   {...register("leetcode_handle", {
                     required: "Leetcode link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?leetcode\.com\/(u\/)?[a-zA-Z0-9_-]+\/?$/,
+                      message:
+                        "Must be a valid LeetCode profile URL (e.g., https://leetcode.com/username or https://leetcode.com/u/username)",
+                    },
                   })}
                 />
                 {errors.leetcode_handle && (
@@ -794,6 +806,12 @@ const ApplicationForm = () => {
                   {...(register("github"),
                   {
                     required: "Github link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/,
+                      message:
+                        "Must be a valid GitHub profile URL (e.g., https://github.com/username)",
+                    },
                   })}
                 />
                 {errors.github && (
