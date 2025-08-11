@@ -27,10 +27,10 @@ export default async function Page() {
   const role = session.user?.role || "applicant";
   const redirectUrl = roleRedirects[role] || "/applicant";
 
-  // Redirect unauthorized users
-  if (role !== "manager") {
-    redirect(redirectUrl);
-  }
+  // // Redirect unauthorized users
+  // if (role !== "manager") {
+  //   redirect(redirectUrl);
+  // }
 
   const res = await fetch(BASE_URL + "/manager/applications/", {
     headers: {
