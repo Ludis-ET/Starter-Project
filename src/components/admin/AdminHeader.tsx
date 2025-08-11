@@ -68,7 +68,7 @@ export default function AdminHeader({ userRole = 'Admin User', userName }: Admin
           {/* User Info and Actions */}
           <div className="flex items-center space-x-6">
             <Link
-              href="/admin/profile"
+              href="/profile"
               className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
               Your Profile
