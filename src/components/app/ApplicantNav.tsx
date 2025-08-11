@@ -60,12 +60,11 @@ const ApplicantNav = () => {
           {/* Right - Profile Links */}
           <div className="absolute right-6 flex items-center space-x-6 text-sm">
             <Link
-              href="/applicant/profile"
-              className={linkClass("/applicant/profile")}
+              href="/profile"
+              className={linkClass("/profile")}
             >
               Your Profile
             </Link>
-            <span className="text-gray-700">Applicant Name</span>
             <Link
               href="#"
               className="text-gray-500 hover:text-red-500 transition-colors"
@@ -128,7 +127,7 @@ const ApplicantNav = () => {
             Dashboard
           </Link>
           <Link
-            href="/applicant/profile"
+            href="/profile"
             className={mobileLinkClass("/profile")}
             onClick={() => setMenuOpen(false)}
           >

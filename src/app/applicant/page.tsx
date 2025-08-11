@@ -399,13 +399,15 @@ export default function ApplicantDashboard() {
                           {applicationStatus.id}
                         </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        className="border-indigo-300 text-indigo-700"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
+                      <Link href="/applicant/Inprogress">
+                        <Button
+                          variant="outline"
+                          className="border-indigo-300 text-indigo-700"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </CardContent>

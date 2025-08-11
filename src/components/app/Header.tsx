@@ -16,7 +16,7 @@ const Header = () => {
 
       {/* Navigation Links */}
       <nav className="flex space-x-6">
-        <Link
+        {/* <Link
           href="/about"
           className="text-gray-600 hover:text-blue-600 transition-colors"
         >
@@ -33,7 +33,7 @@ const Header = () => {
           className="text-gray-600 hover:text-blue-600 transition-colors"
         >
           Contact
-        </Link>
+        </Link> */}
         {session ? (
           <button
             onClick={() => signOut()}
