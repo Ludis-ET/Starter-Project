@@ -46,14 +46,11 @@ const SignInForm = () => {
   const email = watch("email");
   const password = watch("password");
 
-  // --- THIS IS THE FIX ---
-  // This useEffect hook now ONLY depends on user input. It will clear the
-  // formError message if, and only if, the user starts typing again.
   useEffect(() => {
     if (formError) {
       setFormError(null);
     }
-  }, [email, password]); // <-- The dependency on `formError` has been removed.
+  }, [email, password]);
 
   // Redirect user if they are already authenticated
   useEffect(() => {

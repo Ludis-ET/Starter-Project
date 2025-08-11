@@ -567,7 +567,9 @@ const ApplicationForm = () => {
             ? "Unauthorized: Invalid or expired token"
             : response.status === 403
             ? "Forbidden: You do not have permission to submit this application"
-            : result.message || result.error || `Submission failed with status ${response.status}`
+            : result.message ||
+              result.error ||
+              `Submission failed with status ${response.status}`
         );
       }
     } catch (error: any) {
@@ -728,7 +730,7 @@ const ApplicationForm = () => {
                   htmlFor="codeforces_handle"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Codeforces Profile (Optional)
+                  Codeforces Profile
                 </label>
                 <input
                   id="codeforces_handle"
@@ -739,7 +741,15 @@ const ApplicationForm = () => {
                       : "border-gray-300"
                   }`}
                   placeholder="https://codeforces.com/profile/username"
-                  {...register("codeforces_handle")}
+                  {...register("codeforces_handle", {
+                    required: "Codeforce link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?codeforces\.com\/profile\/[a-zA-Z0-9_-]+$/,
+                      message:
+                        "Must be a valid Codeforces profile URL (e.g., https://codeforces.com/profile/username)",
+                    },
+                  })}
                 />
                 {errors.codeforces_handle && (
                   <p className="mt-1 text-sm text-red-600">
@@ -752,7 +762,7 @@ const ApplicationForm = () => {
                   htmlFor="leetcode_handle"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  LeetCode Profile (Optional)
+                  LeetCode Profile
                 </label>
                 <input
                   id="leetcode_handle"
@@ -763,7 +773,15 @@ const ApplicationForm = () => {
                       : "border-gray-300"
                   }`}
                   placeholder="https://leetcode.com/username"
-                  {...register("leetcode_handle")}
+                  {...register("leetcode_handle", {
+                    required: "Leetcode link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?leetcode\.com\/(u\/)?[a-zA-Z0-9_-]+\/?$/,
+                      message:
+                        "Must be a valid LeetCode profile URL (e.g., https://leetcode.com/username or https://leetcode.com/u/username)",
+                    },
+                  })}
                 />
                 {errors.leetcode_handle && (
                   <p className="mt-1 text-sm text-red-600">
@@ -776,7 +794,7 @@ const ApplicationForm = () => {
                   htmlFor="github"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  GitHub Profile (Optional)
+                  GitHub Profile
                 </label>
                 <input
                   id="github"
@@ -785,7 +803,16 @@ const ApplicationForm = () => {
                     errors.github ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="https://github.com/username"
-                  {...register("github")}
+                  {...(register("github"),
+                  {
+                    required: "Github link is required",
+                    pattern: {
+                      value:
+                        /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_-]+\/?$/,
+                      message:
+                        "Must be a valid GitHub profile URL (e.g., https://github.com/username)",
+                    },
+                  })}
                 />
                 {errors.github && (
                   <p className="mt-1 text-sm text-red-600">

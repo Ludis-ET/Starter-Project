@@ -12,6 +12,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -392,12 +393,12 @@ export default function ApplicantDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between pt-4">
-                      <div className="text-sm text-indigo-700">
+                      {/* <div className="text-sm text-indigo-700">
                         Application ID:{" "}
                         <span className="font-mono">
                           {applicationStatus.id}
                         </span>
-                      </div>
+                      </div> */}
                       <Button
                         variant="outline"
                         className="border-indigo-300 text-indigo-700"
