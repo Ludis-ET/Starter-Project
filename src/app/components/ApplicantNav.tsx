@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { IoMenuSharp } from "react-icons/io5";
-
+z
 const ApplicantNav = () => {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);

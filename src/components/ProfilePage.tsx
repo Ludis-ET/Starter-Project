@@ -58,15 +58,16 @@ const ProfilePage = () => {
     setError('');
     setMessage('');
     try {
-      const formData = new FormData();
-      formData.append('full_name', profileForm.full_name);
-      formData.append('email', profileForm.email);
-      if (profileForm.profile_picture) {
-        formData.append('profile_picture', profileForm.profile_picture);
-      }
-      await profileApi.updateProfile(formData, session.accessToken);
+      // const formData = new FormData();
+      // formData.append('full_name', profileForm.full_name);
+      // formData.append('email', profileForm.email);
+      // if (profileForm.profile_picture) {
+      //   formData.append('profile_picture', profileForm.profile_picture);
+      // }
+      await profileApi.updateProfile({full_name: profileForm.full_name, email: profileForm.email}, session.accessToken);
       setMessage('Profile updated successfully');
-      setProfileForm(prev => ({ ...prev, profile_picture: null }));
+      await fetchProfile();
+      // setProfileForm(prev => ({ ...prev, profile_picture: null }));
     } catch {
       setError('Failed to update profile');
     } finally {

@@ -7,6 +7,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, User, Settings, LogOut, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import a2sv from "../../../public/Images/a2sv.svg"
+import Image from 'next/image';
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
@@ -57,25 +59,27 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   const navigationLinks = getNavigationLinks();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">A2SV</span>
-                </div>
-                <span className="text-xl font-semibold text-gray-900 hidden sm:block">
+              {/* <Link href="/" className="flex items-center space-x-2"> */}
+                {/* <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"> */}
+                  {/* <span className="text-white font-bold text-lg">A2SV</span> */}
+                  <Image src={a2sv} alt="logo"/>
+                  
+                {/* </div> */}
+                {/* <span className="text-xl font-semibold text-gray-900 hidden sm:block">
                   Application Platform
-                </span>
-              </Link>
+                </span> */}
+              {/* </Link> */}
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden flex-1 md:flex space-x-8">
               {navigationLinks.map((link) => {
                 const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
                 return (
@@ -178,9 +182,9 @@ const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-auto">
+      <footer className="bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-400">
             © 2024 A2SV Application Platform. All rights reserved.
           </div>
         </div>
