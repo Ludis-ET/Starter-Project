@@ -104,7 +104,7 @@ export default withAuth(
       console.log(`Middleware: Unauthorized manager access by ${role}, redirecting to ${redirectUrl}`);
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
-    if (pathname.startsWith('/reviewer') && role !== 'reviewer') {
+    if (pathname.startsWith('/reviewer') && role !== 'reviewer' && role !== 'manager') {
       console.log(`Middleware: Unauthorized reviewer access by ${role}, redirecting to ${redirectUrl}`);
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
