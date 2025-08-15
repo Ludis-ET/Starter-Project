@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import CustomDropdown from "./CustomDropdown";
 import { useSession, signOut, getSession } from "next-auth/react";
 import { useMemo } from "react";
+import ReviwApplication from "./ReviwApplication";
+import SearchBox from "./SearchBox";
 
 interface Reviewer {
   id: string;
@@ -177,26 +179,6 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
         }
       } catch (error) {
         console.error("Error fetching reviewers:", error);
-        setReviewers([
-          {
-            id: "1",
-            name: "Michael Smith",
-            stats: "3 Assigned / Avg. 2.5 days",
-            reviews: 12,
-          },
-          {
-            id: "2",
-            name: "Sarah Lee",
-            stats: "4 Assigned / Avg. 1.8 days",
-            reviews: 15,
-          },
-          {
-            id: "3",
-            name: "John Doe",
-            stats: "2 Assigned / Avg. 3.1 days",
-            reviews: 8,
-          },
-        ]);
       }
     };
 
@@ -211,6 +193,43 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
     }, {} as Record<string, number>);
   }, [applications]);
   statusFrequencies["All"] = applications.length;
+
+  //   pagination logic
+  const [curPage, setCurPage] = useState(1);
+  const itemsPerPage = 5;
+  const startIndex = (curPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  function handleBack() {
+    setCurPage(curPage - 1);
+  }
+
+  function handleForward() {
+    setCurPage(curPage + 1);
+  }
+
+  // Review overlay logic
+  const [isReviewOpen, setIsReviewOpen] = useState<boolean>(false);
+  const [selectedApplication, setSelectedApplication] = useState<string | null>(
+    null
+  );
+
+  // Search functionlaity logic
+  const [searchText, setSearchText] = useState("");
+  const searchedApplications = applications.filter((app) =>
+    app.applicant_name.toLowerCase().includes(searchText.toLowerCase())
+  );
+  const curApplications = searchedApplications.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(searchedApplications.length / itemsPerPage);
+
+  useEffect(() => {
+    if (isReviewOpen) {
+      document.body.style.overflow = "hidden";
+    }else{
+      document.body.style.overflow = "auto";
+    }
+
+  }, [isReviewOpen]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -241,10 +260,11 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-30 gap-6">
           <div className="lg:col-span-2 bg-white rounded-xl shadow-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">All Applications</h2>
+              <SearchBox setSearchText={setSearchText} />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -261,50 +281,81 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
               </select>
             </div>
             <div className="relative">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-gray-500 border-gray-100">
-                  <tr>
-                    <th className="px-1">APPLICANT</th>
-                    <th className="px-1">SUBMITTED</th>
-                    <th className="px-1">ASSIGNED REVIEWER</th>
-                    <th className="px-1">STATUS</th>
-                    <th>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications
-                    .filter(
-                      (app) =>
-                        filterStatus === "All" ||
-                        filterStatus === "all" ||
-                        app.status === filterStatus
-                    )
-                    .map((app) => (
-                      <tr key={app.id} className="hover:bg-gray-100">
-                        <td className="py-2 px-1">{app.applicant_name}</td>
-                        <td className="px-1">
-                          {new Date().toISOString().split("T")[0]}
-                        </td>
-                        <td className="px-1">
-                          {app.assigned_reviewer_name
-                            ? app.assigned_reviewer_name
-                            : "None"}
-                        </td>
-                        <td className="px-1">{app.status}</td>
-                        <td>
-                          <CustomDropdown
-                            reviewers={reviewers}
-                            app={app}
-                            refetchApplications={refetchApplications}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto min-h-[550px]">
+                <table className="w-full text-xs text-left">
+                  <thead className="text-gray-500 border border-gray-200 bg-gray-100">
+                    <tr>
+                      <th className="p-2 px-1">APPLICANT</th>
+                      <th className="px-1">SUBMITTED</th>
+                      <th className="px-1">ASSIGNED REVIEWER</th>
+                      <th className="px-1">STATUS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {curApplications
+                      .filter(
+                        (app) =>
+                          filterStatus === "All" ||
+                          filterStatus === "all" ||
+                          app.status === filterStatus
+                      )
+                      .map((app) => (
+                        <tr key={app.id} className="hover:bg-gray-100">
+                          <td className="p-4 font-semibold">
+                            {app.applicant_name}
+                          </td>
+                          <td className="px-1 font-extralight text-gray-600">
+                            {new Date().toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td className="px-1">
+                            <div className="inline-block rounded-2xl bg-gray-200 px-4">
+                              {app.assigned_reviewer_name
+                                ? app.assigned_reviewer_name
+                                : "None"}
+                            </div>
+                          </td>
+                          <td className="px-1">
+                            <div className="inline-block rounded-2xl bg-indigo-200 text-blue-950 p-1 px-2">
+                              {app.status}
+                            </div>
+                          </td>
+                          <td>
+                            <CustomDropdown
+                              reviewers={reviewers}
+                              app={app}
+                              refetchApplications={refetchApplications}
+                              setIsReviewOpen={setIsReviewOpen}
+                              setSelectedApplication={setSelectedApplication}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            </div>
+            {/* paginaiton nav btns  */}
+            <button
+              onClick={handleBack}
+              className="bg-gray-200 rounded-2xl px-2 mr-2"
+              disabled={curPage == 1}
+            >
+              «
+            </button>
+
+            <p className="inline-block p-1 text-sm mr-2">Page {curPage}</p>
+            <button
+              onClick={handleForward}
+              className="bg-gray-200 rounded-2xl px-2"
+              disabled={curPage == totalPages}
+            >
+              »
+            </button>
           </div>
 
           <div className="bg-white rounded-xl shadow-2xl p-6 h-fit">
@@ -328,6 +379,13 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
           </div>
         </div>
       </div>
+
+      {isReviewOpen && selectedApplication && (
+        <ReviwApplication
+          slug={selectedApplication}
+          setIsReviewOpen={setIsReviewOpen}
+        />
+      )}
     </div>
   );
 };
@@ -336,7 +394,7 @@ const StatCard: React.FC<{ title: string; value: number }> = ({
   title,
   value,
 }) => (
-  <div className="rounded-xl shadow-1.5xl p-6 bg-gray-200 transition-transform duration-300 ease-in-out hover:-translate-y-2">
+  <div className="border border-gray-200 rounded-xl shadow-2xl p-6 bg-white transition-transform duration-300 ease-in-out hover:-translate-y-2">
     <p className="text-sm text-gray-500">{title}</p>
     <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>
   </div>
