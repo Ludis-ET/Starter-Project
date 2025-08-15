@@ -29,7 +29,6 @@ const ManagerActions = ({ slug, accessToken, initialStatus }: Props) => {
           decision_notes: "NOt bad for a newb :)",
         }),
       });
-      alert("Rejected successfully");
     } catch (err) {
       console.error("Rejection failed", err);
       setStatus(prevStatus);
@@ -52,7 +51,6 @@ const ManagerActions = ({ slug, accessToken, initialStatus }: Props) => {
           decision_notes: "Nice Job :)",
         }),
       });
-      alert("Accepted successfully");
     } catch (err) {
       console.error("Accept failed", err);
       setStatus(prevStatus);

@@ -155,6 +155,7 @@
 import { useSession, signOut, getSession } from "next-auth/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import ReviwApplication from "./ReviwApplication";
 
 interface Reviewer {
   id: string;
@@ -181,12 +182,16 @@ interface CustomDropdownProps {
   reviewers: Reviewer[];
   app: Application;
   refetchApplications: () => void;
+  setIsReviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedApplication: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const CustomDropdown: React.FC<CustomDropdownProps> = ({
   reviewers,
   app,
   refetchApplications,
+  setIsReviewOpen,
+  setSelectedApplication,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
@@ -227,7 +232,10 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   };
 
   const actions: Action[] = [
-    { name: "Review", onClick: () => router.push(`/manager/review/${app.id}`) },
+    { name: "Review", onClick: () => {
+      setIsReviewOpen(true);
+      setSelectedApplication(app.id);
+    } },
     {
       name: "View Details",
       onClick: () => {
@@ -260,9 +268,6 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  
-
 
   return (
     // MODIFIED: Removed erroneous "over-" prefix from className and ensured relative positioning

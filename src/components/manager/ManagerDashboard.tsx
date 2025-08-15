@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import CustomDropdown from "./CustomDropdown";
 import { useSession, signOut, getSession } from "next-auth/react";
 import { useMemo } from "react";
+import ReviwApplication from "./ReviwApplication";
+import SearchBox from "./SearchBox";
 
 interface Reviewer {
   id: string;
@@ -177,26 +179,6 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
         }
       } catch (error) {
         console.error("Error fetching reviewers:", error);
-        setReviewers([
-          {
-            id: "1",
-            name: "Michael Smith",
-            stats: "3 Assigned / Avg. 2.5 days",
-            reviews: 12,
-          },
-          {
-            id: "2",
-            name: "Sarah Lee",
-            stats: "4 Assigned / Avg. 1.8 days",
-            reviews: 15,
-          },
-          {
-            id: "3",
-            name: "John Doe",
-            stats: "2 Assigned / Avg. 3.1 days",
-            reviews: 8,
-          },
-        ]);
       }
     };
 
@@ -211,6 +193,43 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
     }, {} as Record<string, number>);
   }, [applications]);
   statusFrequencies["All"] = applications.length;
+
+  //   pagination logic
+  const [curPage, setCurPage] = useState(1);
+  const itemsPerPage = 5;
+  const startIndex = (curPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  function handleBack() {
+    setCurPage(curPage - 1);
+  }
+
+  function handleForward() {
+    setCurPage(curPage + 1);
+  }
+
+  // Review overlay logic
+  const [isReviewOpen, setIsReviewOpen] = useState<boolean>(false);
+  const [selectedApplication, setSelectedApplication] = useState<string | null>(
+    null
+  );
+
+  // Search functionlaity logic
+  const [searchText, setSearchText] = useState("");
+  const searchedApplications = applications.filter((app) =>
+    app.applicant_name.toLowerCase().includes(searchText.toLowerCase())
+  );
+  const curApplications = searchedApplications.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(searchedApplications.length / itemsPerPage);
+
+  useEffect(() => {
+    if (isReviewOpen) {
+      document.body.style.overflow = "hidden";
+    }else{
+      document.body.style.overflow = "auto";
+    }
+
+  }, [isReviewOpen]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -245,6 +264,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
           <div className="lg:col-span-2 bg-white rounded-xl shadow-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">All Applications</h2>
+              <SearchBox setSearchText={setSearchText} />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -261,7 +281,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
               </select>
             </div>
             <div className="relative">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto min-h-[550px]">
                 <table className="w-full text-xs text-left">
                   <thead className="text-gray-500 border border-gray-200 bg-gray-100">
                     <tr>
@@ -273,7 +293,7 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {applications
+                    {curApplications
                       .filter(
                         (app) =>
                           filterStatus === "All" ||
@@ -309,6 +329,8 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                               reviewers={reviewers}
                               app={app}
                               refetchApplications={refetchApplications}
+                              setIsReviewOpen={setIsReviewOpen}
+                              setSelectedApplication={setSelectedApplication}
                             />
                           </td>
                         </tr>
@@ -317,6 +339,23 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
                 </table>
               </div>
             </div>
+            {/* paginaiton nav btns  */}
+            <button
+              onClick={handleBack}
+              className="bg-gray-200 rounded-2xl px-2 mr-2"
+              disabled={curPage == 1}
+            >
+              «
+            </button>
+
+            <p className="inline-block p-1 text-sm mr-2">Page {curPage}</p>
+            <button
+              onClick={handleForward}
+              className="bg-gray-200 rounded-2xl px-2"
+              disabled={curPage == totalPages}
+            >
+              »
+            </button>
           </div>
 
           <div className="bg-white rounded-xl shadow-2xl p-6 h-fit">
@@ -340,6 +379,13 @@ const ManagerDashboard: React.FC<{ applications: Application[] }> = ({
           </div>
         </div>
       </div>
+
+      {isReviewOpen && selectedApplication && (
+        <ReviwApplication
+          slug={selectedApplication}
+          setIsReviewOpen={setIsReviewOpen}
+        />
+      )}
     </div>
   );
 };

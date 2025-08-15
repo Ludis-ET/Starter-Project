@@ -41,3 +41,20 @@ declare module "next-auth/jwt" {
     role: string;
   }
 }
+
+export interface Application {
+  id: string;
+  applicant_name: string;
+  country: string;
+  degree: string;
+  school: string;
+  codeforces_handle: string;
+  leetcode_handle: string;
+  resume_url: string;
+  essay_about_you: string;
+  essay_why_a2sv: string;
+  status: string;
+  student_id: string;
+  submitted_at: string;
+  updated_at: string;
+}

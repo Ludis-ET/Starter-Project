@@ -15,23 +15,6 @@ export default async function Page() {
     redirect("/signin");
   }
 
-  // Define role-specific redirect URLs
-  const roleRedirects: { [key: string]: string } = {
-    admin: "/admin",
-    manager: "/manager",
-    reviewer: "/reviewer",
-    applicant: "/applicant",
-  };
-
-  // Get the user's role, default to 'applicant'
-  const role = session.user?.role || "applicant";
-  const redirectUrl = roleRedirects[role] || "/applicant";
-
-  // // Redirect unauthorized users
-  // if (role !== "manager") {
-  //   redirect(redirectUrl);
-  // }
-
   const res = await fetch(BASE_URL + "/manager/applications/", {
     headers: {
       Authorization: `Bearer ${accessToken}`,
